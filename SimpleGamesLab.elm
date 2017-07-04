@@ -31,20 +31,32 @@ game g =
     EU17    -> Games.eu17
     Squares -> Games.magicSquares
 
+headerRow : Model -> Html Msg
+headerRow model =
+  div []
+    [ text "Game:"
+    , button [ onClick Parse ] [ text "Parse" ]
+    , button [ onClick (Load EU17) ] [ text "Load EU17" ]
+    , button [ onClick (Load Squares) ] [ text "Load Magic Squares" ]
+    ]
+
 view : Model -> Html Msg
 view model =
   div []
-    [ div []
-        [ text "Game:"
-        , button [ onClick Parse ] [ text "Parse" ]
-        , button [ onClick (Load EU17) ] [ text "Load EU17" ]
-        , button [ onClick (Load Squares) ] [ text "Load Magic Squares" ]
-        ]
+    [ headerRow model
     , textarea [ rows 35, placeholder "Please input game", onInput Input ] []
-    -- , text (toString model.text)
-    -- , text (toString model.qobdd)
-    , text (toString (Maybe.withDefault 10 (Maybe.map QOBDD.size model.qobdd)))
+    , viewSize model
+    , viewFullSize model
     ]
+
+viewSize : Model -> Html Msg
+viewSize model =
+  div [] [text (Maybe.withDefault "no size available" (Maybe.map (toString << QOBDD.size) model.qobdd))]
+
+viewFullSize : Model -> Html Msg
+viewFullSize model =
+  div [] [text (Maybe.withDefault "no fullsize available" (Maybe.map (toString << QOBDD.fullSize) model.qobdd))]
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model = parsedMWVG Parsed

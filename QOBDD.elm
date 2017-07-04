@@ -1,4 +1,4 @@
-port module QOBDD exposing(parseMWVG, parsedMWVG, QOBDD, size)
+port module QOBDD exposing(parseMWVG, parsedMWVG, QOBDD, size, fullSize)
 
 import Json.Decode as Json
 import Json.Encode
@@ -16,56 +16,69 @@ qobddDecoder =
 size : QOBDD -> Int
 size qobdd = sizeTree qobdd.root
 
--- this.size_ = function () {
--- 	var op_id = ++QOBDD.unique_op_id;
--- 	var sum = 0;
---
--- 	var aux = function (v) {
--- 		if ( v.isConst() || v.visited == op_id) return;
--- 		else {
--- 			sum ++;
--- 			v.visited = op_id;
--- 			aux(v.getThen());
--- 			aux(v.getElse());
--- 		}
--- 	};
---
--- 	aux(this.getRoot());
--- 	return sum;
--- };
+fullSize : QOBDD -> Int
+fullSize qobdd = fullSizeTree qobdd.root
+
+-- coalitions : QOBDD -> Int
+-- coalitions 
 
 
 type Tree = Empty
           | Node {label : Int, id : Int, t : Tree, e : Tree}
           | Ref Int
 
--- foldTree : b -> (Int -> b) -> (Int -> Int -> b -> b) -> Tree -> b
--- foldTree
---
--- foldTreeWithRef :
+foldTree : b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> Tree -> b
+foldTree empty ref node tree =
+  case tree of
+    Empty  -> empty
+    Ref i  -> ref i
+    Node r ->
+      node r.label r.id (foldTree empty ref node r.t) (foldTree empty ref node r.e)
 
--- foldTree : b -> (Int -> Int -> a -> b -> b -> b) -> Tree a -> b
--- foldTree e f tree =
---   case tree of
---     Empty  -> e
---     Node r -> f r.label r.id r.value (foldTree e f r.t) (foldTree e f r.e)
+foldTreeShare : b -> (Int -> Int -> b -> b -> b) -> Tree -> b
+foldTreeShare empty node tree =
+  Tuple.second (foldTreeShareDict Dict.empty empty node tree)
+
+foldTreeShareDict : Dict.Dict Int b -> b -> (Int -> Int -> b -> b -> b) -> Tree
+                  -> (Dict.Dict Int b, b)
+foldTreeShareDict dict1 empty node tree =
+  case tree of
+    Empty -> (dict1, empty)
+    Node r ->
+      let (dict2, res1) = foldTreeShareDict dict1 empty node r.t
+          (dict3, res2) = foldTreeShareDict dict2 empty node r.e
+          res = node r.label r.id res1 res2
+      in
+      (Dict.insert r.id res dict3, res)
+    Ref i ->
+      case Dict.get i dict1 of
+        Nothing -> Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict1)
+        Just v -> (dict1, v)
+
 
 sizeTree : Tree -> Int
-sizeTree = Tuple.second << sizeTreeDict Dict.empty
+sizeTree = foldTree 0 (\_ -> 0) (\_ _ s1 s2 -> s1+s2+1)
 
-sizeTreeDict : Dict.Dict Int Int -> Tree -> (Dict.Dict Int Int, Int)
-sizeTreeDict dict1 tree =
-  case tree of
-    Empty  -> (dict1, 0)
-    Node r ->
-      let (dict2, size1) = sizeTreeDict dict1 r.t
-          (dict3, size2) = sizeTreeDict dict2 r.e
-      in
-      (Dict.insert r.id (size1+size2+1) dict3, size1+size2+1)
-    Ref id ->
-       case Dict.get id dict1 of
-         Nothing -> Debug.crash ("Ref " ++ toString id ++ " missing\n" ++ toString dict1)
-         Just v -> (dict1, v)
+fullSizeTree : Tree -> Int
+fullSizeTree = foldTreeShare 0 (\_ _ s1 s2 -> s1+s2+1)
+
+
+-- sizeTree : Tree -> Int
+-- sizeTree = Tuple.second << sizeTreeDict Dict.empty
+--
+-- sizeTreeDict : Dict.Dict Int Int -> Tree -> (Dict.Dict Int Int, Int)
+-- sizeTreeDict dict1 tree =
+--   case tree of
+--     Empty  -> (dict1, 0)
+--     Node r ->
+--       let (dict2, size1) = sizeTreeDict dict1 r.t
+--           (dict3, size2) = sizeTreeDict dict2 r.e
+--       in
+--       (Dict.insert r.id (size1+size2+1) dict3, size1+size2+1)
+--     Ref id ->
+--        case Dict.get id dict1 of
+--          Nothing -> Debug.crash ("Ref " ++ toString id ++ " missing\n" ++ toString dict1)
+--          Just v -> (dict1, v)
 
 empty : List Int -> Float -> Json.Decoder (List Int, Tree)
 empty l f =

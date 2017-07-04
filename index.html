@@ -1,0 +1,65 @@
+
+<div id="spelling"></div>
+
+<script type="text/javascript" src="SimpleGamesLab.js"></script>
+
+<script type="text/javascript" src="js/Config.js"></script>
+<script type="text/javascript" src="js/Helper.js"></script>
+<script type="text/javascript" src="js/Metric.js"></script>
+<script type="text/javascript">
+  IncludeJavaScript (Config.closure_library_path + '/closure/goog/base.js');
+</script>
+<script type="text/javascript">
+  goog.require('goog.ui.Dialog');
+  goog.require('goog.string'); // goog.string.htmlEscape
+  goog.require('goog.ui.Tab');
+  goog.require('goog.ui.TabBar');
+  goog.require('goog.userAgent');
+</script>
+<script type="text/javascript">
+  IncludeJavaScript (Config.jshashtable_path + '/jshashtable.js');
+  IncludeJavaScript (Config.jshashtable_path + '/jshashset.js');
+</script>
+
+<script type="text/javascript" src="js/core/Misc.js"></script>
+<script type="text/javascript" src="js/core/ThresholdCache.js"></script>
+<script type="text/javascript" src="js/core/WVG.js"></script>
+<script type="text/javascript" src="js/core/Tables.js"></script>
+<script type="text/javascript" src="js/core/QOBDD.js"></script>
+<script type="text/javascript" src="js/core/Manip.js"></script>
+<script type="text/javascript" src="js/core/DisjointSets.js"></script>
+<script type="text/javascript" src="js/core/Mergesort.js"></script>
+<script type="text/javascript" src="js/core/Partition.js"></script>
+<script type="text/javascript" src="js/core/Poset.js"></script>
+<script type="text/javascript" src="js/core/Preorder.js"></script>
+<script type="text/javascript" src="js/core/Isbell1958.js"></script>
+<script type="text/javascript" src="js/core/PEG.js"></script>
+<script type="text/javascript" src="js/core/BoolParser.js"></script>
+<script type="text/javascript" src="js/core/InputConversion.js"></script>
+<script type="text/javascript" src="js/core/Sudhoelter1989.js"></script>
+<script type="text/javascript" src="js/core/Bolus2011.js"></script>
+<script type="text/javascript" src="js/core/PowerIndices.js"></script>
+<script type="text/javascript" src="js/core/SimpleGame.js"></script>
+<script type="text/javascript" src="js/core/Timer.js"></script>
+<script type="text/javascript" src="js/draw.js"></script>
+<script type="text/javascript" src="js/core/GameExamples.js"></script>
+<script type="text/javascript" src="js/DrawLattice.js"></script>
+<script type="text/javascript" src="js/Solver.js"></script>
+<script type="text/javascript" src="js/core/CoatesLewis1961.js"></script>
+<script type="text/javascript" src="js/core/LinearProgram.js"></script>
+<script type="text/javascript" src="js/core/CPLEX_LPBuilder.js"></script>
+<script type="text/javascript" src="js/core/GMPL_LPBuilder.js"></script>
+<script type="text/javascript" src="js/core/MDDView.js"></script>
+<script type="text/javascript" src="js/core/NaryTree.js"></script>
+<script type="text/javascript" src="js/core/Formula.js"></script>
+<script type="text/javascript" src="js/core/WVGModelService.js"></script>
+<script type="text/javascript" src="js/core/FWVGModelService.js"></script>
+<script>
+  var app = Elm.SimpleGamesLab.fullscreen();
+  app.ports.parseMWVG.subscribe(function(str) {
+    var game = parse_mwvg(str);
+    var qobdd = game.getWinQOBDD();
+
+    app.ports.parsedMWVGJson.send(qobdd);
+  });
+</script>

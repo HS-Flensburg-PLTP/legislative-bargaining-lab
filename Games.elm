@@ -1,5 +1,23 @@
 module Games exposing(..)
 
+
+canadian95 ="""
+# System to Amend the Canadian Constitution
+#    from "Mathematics and Politics", Taylor, 1995, Springer.
+#
+7 50
+1 34 Ontario
+1 29 Quebec
+1 9 British Columbia
+1 7 Alberta
+1 5 Saskatchewan
+1 5 Manitoba
+1 4 Nova Scotia
+1 3 New Brunswick
+1 3 Newfoundland
+1 1 Prince Edward Island
+"""
+
 magicSquares ="""
 # 3x3 Magic Square, sum is 15 in each row/col/diag.
 #

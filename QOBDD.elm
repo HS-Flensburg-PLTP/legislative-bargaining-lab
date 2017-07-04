@@ -1,11 +1,11 @@
-port module QOBDD exposing(parseMWVG, parsedMWVG, QOBDD, size, fullSize)
+port module QOBDD exposing(parseMWVG, parsedMWVG, QOBDD, size, fullSize, coalitions)
 
 import Json.Decode as Json
 import Json.Encode
 import Dict
 
 
-type alias QOBDD = { n : Int, root : Tree }
+type alias QOBDD = {vars : Int, root : Tree}
 
 qobddDecoder : Json.Decoder QOBDD
 qobddDecoder =
@@ -19,34 +19,38 @@ size qobdd = sizeTree qobdd.root
 fullSize : QOBDD -> Int
 fullSize qobdd = fullSizeTree qobdd.root
 
--- coalitions : QOBDD -> Int
--- coalitions 
+coalitions : QOBDD -> Float
+coalitions qobdd = coalitionsTree (toFloat qobdd.vars) qobdd.root
+-- coalitions qobdd = coalitionsTree qobdd.root
 
 
-type Tree = Empty
+type Tree = Zero
+          | One
           | Node {label : Int, id : Int, t : Tree, e : Tree}
           | Ref Int
 
-foldTree : b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> Tree -> b
-foldTree empty ref node tree =
+foldTree : b -> b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> Tree -> b
+foldTree zero one ref node tree =
   case tree of
-    Empty  -> empty
+    Zero   -> zero
+    One    -> one
     Ref i  -> ref i
     Node r ->
-      node r.label r.id (foldTree empty ref node r.t) (foldTree empty ref node r.e)
+      node r.label r.id (foldTree zero one ref node r.t) (foldTree zero one ref node r.e)
 
-foldTreeShare : b -> (Int -> Int -> b -> b -> b) -> Tree -> b
-foldTreeShare empty node tree =
-  Tuple.second (foldTreeShareDict Dict.empty empty node tree)
+foldTreeShare : b -> b -> (Int -> Int -> b -> b -> b) -> Tree -> b
+foldTreeShare zero one node tree =
+  Tuple.second (foldTreeShareDict Dict.empty zero one node tree)
 
-foldTreeShareDict : Dict.Dict Int b -> b -> (Int -> Int -> b -> b -> b) -> Tree
+foldTreeShareDict : Dict.Dict Int b -> b -> b -> (Int -> Int -> b -> b -> b) -> Tree
                   -> (Dict.Dict Int b, b)
-foldTreeShareDict dict1 empty node tree =
+foldTreeShareDict dict1 zero one node tree =
   case tree of
-    Empty -> (dict1, empty)
+    Zero -> (dict1, zero)
+    One -> (dict1, one)
     Node r ->
-      let (dict2, res1) = foldTreeShareDict dict1 empty node r.t
-          (dict3, res2) = foldTreeShareDict dict2 empty node r.e
+      let (dict2, res1) = foldTreeShareDict dict1 zero one node r.t
+          (dict3, res2) = foldTreeShareDict dict2 zero one node r.e
           res = node r.label r.id res1 res2
       in
       (Dict.insert r.id res dict3, res)
@@ -57,11 +61,18 @@ foldTreeShareDict dict1 empty node tree =
 
 
 sizeTree : Tree -> Int
-sizeTree = foldTree 0 (\_ -> 0) (\_ _ s1 s2 -> s1+s2+1)
+sizeTree = foldTree 0 0 (\_ -> 0) (\_ _ s1 s2 -> s1+s2+1)
 
 fullSizeTree : Tree -> Int
-fullSizeTree = foldTreeShare 0 (\_ _ s1 s2 -> s1+s2+1)
+fullSizeTree = foldTreeShare 0 0 (\_ _ s1 s2 -> s1+s2+1)
 
+-- coalitionsTree : Tree -> Float
+-- coalitionsTree tree =
+--   foldTreeShare identity (\n -> 2^n) (\_ _ ft fe n -> (ft (n+1) + fe (n+1)) / 2) tree 0
+
+coalitionsTree : Float -> Tree -> Float
+coalitionsTree n tree =
+  foldTreeShare 0 (2^n) (\_ _ ft fe -> (ft + fe) / 2) tree
 
 -- sizeTree : Tree -> Int
 -- sizeTree = Tuple.second << sizeTreeDict Dict.empty
@@ -80,9 +91,9 @@ fullSizeTree = foldTreeShare 0 (\_ _ s1 s2 -> s1+s2+1)
 --          Nothing -> Debug.crash ("Ref " ++ toString id ++ " missing\n" ++ toString dict1)
 --          Just v -> (dict1, v)
 
-empty : List Int -> Float -> Json.Decoder (List Int, Tree)
-empty l f =
-  if isInfinite f then Json.succeed (l, Empty) else Json.fail "no empty"
+leaf : List Int -> Float -> Int -> Json.Decoder (List Int, Tree)
+leaf l f v =
+  if isInfinite f then Json.succeed (l, if v == 0 then Zero else One) else Json.fail "no leaf"
 
 node : Float -> Int -> Tree -> (List Int, Tree) -> (List Int, Tree)
 node label id t (l,e) =
@@ -98,8 +109,9 @@ treeDecoder = Json.map Tuple.second (treeDecoderList [])
 treeDecoderList : List Int -> Json.Decoder (List Int, Tree)
 treeDecoderList l =
   Json.oneOf [
-    Json.null (l, Empty),
-    Json.andThen (empty l) (Json.field "label" Json.float),
+    Json.andThen (\v ->
+      Json.andThen (\f -> leaf l f v) (Json.field "label" Json.float))
+      (Json.field "value" Json.int),
     Json.andThen (ref l) (Json.field "id" Json.int),
     Json.andThen (\label ->
       Json.andThen (\id ->

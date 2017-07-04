@@ -11,7 +11,7 @@ type alias Model = { text : String, qobdd : Maybe QOBDD }
 
 type Msg = Parse | Load Game | Input String | Parsed QOBDD
 
-type Game = EU17 | Squares
+type Game = EU17 | Squares | Canadian95
 
 
 init : (Model, Cmd Msg)
@@ -28,8 +28,9 @@ update msg model =
 game : Game -> String
 game g =
   case g of
-    EU17    -> Games.eu17
-    Squares -> Games.magicSquares
+    EU17       -> Games.eu17
+    Squares    -> Games.magicSquares
+    Canadian95 -> Games.canadian95
 
 headerRow : Model -> Html Msg
 headerRow model =
@@ -38,6 +39,7 @@ headerRow model =
     , button [ onClick Parse ] [ text "Parse" ]
     , button [ onClick (Load EU17) ] [ text "Load EU17" ]
     , button [ onClick (Load Squares) ] [ text "Load Magic Squares" ]
+    , button [ onClick (Load Canadian95) ] [ text "Load Canadian 95" ]
     ]
 
 view : Model -> Html Msg
@@ -47,6 +49,7 @@ view model =
     , textarea [ rows 35, placeholder "Please input game", onInput Input ] []
     , viewSize model
     , viewFullSize model
+    -- , text (toString model.qobdd)
     ]
 
 viewSize : Model -> Html Msg
@@ -55,7 +58,7 @@ viewSize model =
 
 viewFullSize : Model -> Html Msg
 viewFullSize model =
-  div [] [text (Maybe.withDefault "no fullsize available" (Maybe.map (toString << QOBDD.fullSize) model.qobdd))]
+  div [] [text (Maybe.withDefault "no fullsize available" (Maybe.map (toString << QOBDD.coalitions) model.qobdd))]
 
 
 subscriptions : Model -> Sub Msg

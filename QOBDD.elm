@@ -1,4 +1,13 @@
-port module QOBDD exposing(parseMWVG, parsedMWVG, QOBDD, size, fullSize, coalitions)
+port module QOBDD exposing
+  ( parseMWVG
+  , parsedMWVG
+  , QOBDD
+  , Tree
+  , size
+  , fullSize
+  , coalitions
+  , foldTreeShare
+  )
 
 import Json.Decode as Json
 import Json.Encode
@@ -29,20 +38,23 @@ type Tree = Zero
           | Node {label : Int, id : Int, t : Tree, e : Tree}
           | Ref Int
 
+
+-- treeString : Tree -> String
+-- treeString =
+
 foldTree : b -> b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> Tree -> b
 foldTree zero one ref node tree =
   case tree of
     Zero   -> zero
     One    -> one
     Ref i  -> ref i
-    Node r ->
-      node r.label r.id (foldTree zero one ref node r.t) (foldTree zero one ref node r.e)
+    Node r -> node r.label r.id (foldTree zero one ref node r.t) (foldTree zero one ref node r.e)
 
-foldTreeShare : b -> b -> (Int -> Int -> b -> b -> b) -> Tree -> b
+foldTreeShare : b -> b -> (Int -> b -> b -> b) -> Tree -> b
 foldTreeShare zero one node tree =
   Tuple.second (foldTreeShareDict Dict.empty zero one node tree)
 
-foldTreeShareDict : Dict.Dict Int b -> b -> b -> (Int -> Int -> b -> b -> b) -> Tree
+foldTreeShareDict : Dict.Dict Int b -> b -> b -> (Int -> b -> b -> b) -> Tree
                   -> (Dict.Dict Int b, b)
 foldTreeShareDict dict1 zero one node tree =
   case tree of
@@ -51,7 +63,7 @@ foldTreeShareDict dict1 zero one node tree =
     Node r ->
       let (dict2, res1) = foldTreeShareDict dict1 zero one node r.t
           (dict3, res2) = foldTreeShareDict dict2 zero one node r.e
-          res = node r.label r.id res1 res2
+          res = node r.label res1 res2
       in
       (Dict.insert r.id res dict3, res)
     Ref i ->
@@ -64,7 +76,7 @@ sizeTree : Tree -> Int
 sizeTree = foldTree 0 0 (\_ -> 0) (\_ _ s1 s2 -> s1+s2+1)
 
 fullSizeTree : Tree -> Int
-fullSizeTree = foldTreeShare 0 0 (\_ _ s1 s2 -> s1+s2+1)
+fullSizeTree = foldTreeShare 0 0 (\_ s1 s2 -> s1+s2+1)
 
 -- coalitionsTree : Tree -> Float
 -- coalitionsTree tree =
@@ -72,7 +84,7 @@ fullSizeTree = foldTreeShare 0 0 (\_ _ s1 s2 -> s1+s2+1)
 
 coalitionsTree : Float -> Tree -> Float
 coalitionsTree n tree =
-  foldTreeShare 0 (2^n) (\_ _ ft fe -> (ft + fe) / 2) tree
+  foldTreeShare 0 (2^n) (\_ ft fe -> (ft + fe) / 2) tree
 
 -- sizeTree : Tree -> Int
 -- sizeTree = Tuple.second << sizeTreeDict Dict.empty
@@ -117,8 +129,8 @@ treeDecoderList l =
       Json.andThen (\id ->
         Json.andThen (\(l1,t) ->
           Json.map (node label id t)
-            (Json.field "t" (Json.lazy (\_ -> treeDecoderList l1))))
-          (Json.field "e" (Json.lazy (\_ -> treeDecoderList l))))
+            (Json.field "e" (Json.lazy (\_ -> treeDecoderList l1))))
+          (Json.field "t" (Json.lazy (\_ -> treeDecoderList l))))
         (Json.field "id" Json.int))
       (Json.field "label" Json.float)
   ]

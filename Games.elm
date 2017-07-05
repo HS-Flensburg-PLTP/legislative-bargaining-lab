@@ -1,6 +1,13 @@
 module Games exposing(..)
 
 
+test ="""
+3
+2
+1
+1
+"""
+
 canadian95 ="""
 # System to Amend the Canadian Constitution
 #    from "Mathematics and Politics", Taylor, 1995, Springer.

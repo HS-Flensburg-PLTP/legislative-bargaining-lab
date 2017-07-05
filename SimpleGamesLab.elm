@@ -2,60 +2,79 @@ module SimpleGamesLab exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)
-import Html.Events exposing (onClick, onInput)
+import Html.Events exposing (onClick, onInput, on, targetValue)
 import QOBDD exposing (parseMWVG, parsedMWVG, QOBDD, size)
-import Games
+import Games exposing (Game(..), gameDefinition, games, gameDecoder)
+import Json.Decode
 import Probabilities
 import Dict
+import Random exposing (Generator)
 
 
-type alias Model = { text : String, qobdd : Maybe QOBDD }
+-- split Model
+type alias Model = {text : String, qobdd : Maybe QOBDD, probs : List (List Float)}
 
-type Msg = Parse | Load Game | Input String | Parsed QOBDD
+hasQOBDD : Model -> Bool
+hasQOBDD model =
+  case model.qobdd of
+    Nothing -> True
+    Just _  -> False
 
-type Game = EU17 | Squares | Canadian95 | Test
+hasText : Model -> Bool
+hasText model = String.isEmpty model.text
+
+
+-- split Msg
+type Msg = Parse | Display Game | Input String | Random | Probs (List (List Float)) | Parsed QOBDD
 
 
 init : (Model, Cmd Msg)
-init = ({text = "", qobdd = Nothing} , Cmd.none)
+init = ({text = "", qobdd = Nothing, probs = []} , Cmd.none)
 
 update : Msg -> Model -> (Model, Cmd Msg)
 update msg model =
   case msg of
-    Parse        -> ({model | text = ""}, parseMWVG model.text)
-    Load g       -> ({model | text = game g}, Cmd.none)
+    Parse        -> (model, parseMWVG model.text)
+    Display g    -> ({model | text = gameDefinition g}, Cmd.none)
     Input str    -> ({model | text = str}, Cmd.none)
-    Parsed qobdd -> ({model | qobdd = Just qobdd}, Cmd.none)
-
-game : Game -> String
-game g =
-  case g of
-    EU17       -> Games.eu17
-    Squares    -> Games.magicSquares
-    Canadian95 -> Games.canadian95
-    Test       -> Games.test
+    Parsed qobdd -> ({model | qobdd = Just qobdd, probs = Probabilities.halves qobdd.vars}, Cmd.none)
+    Random       ->
+      case model.qobdd of
+        Just q  -> (model, Random.generate Probs (Probabilities.probsGenerator q.vars))
+        Nothing -> Debug.crash ""
+    Probs fs    -> ({ model | probs = fs }, Cmd.none)
 
 headerRow : Model -> Html Msg
 headerRow model =
   div []
     [ text "Game:"
-    , button [ onClick Parse ] [ text "Parse" ]
-    , button [ onClick (Load EU17) ] [ text "Load EU17" ]
-    , button [ onClick (Load Squares) ] [ text "Load Magic Squares" ]
-    , button [ onClick (Load Canadian95) ] [ text "Load Canadian 95" ]
-    , button [ onClick (Load Test) ] [ text "Load Test" ]
+    , select [on "change" (Json.Decode.map Display (Json.Decode.andThen gameDecoder targetValue))]
+             gameOptions
+    , button [ onClick Parse, disabled (hasText model) ] [ text "Load current game" ]
     ]
+
+gameOptions : List (Html Msg)
+gameOptions =
+  option [value "", disabled True, selected True] [text "Please Choose"]
+    :: List.map gameOption games
+
+gameOption : Game -> Html Msg
+gameOption game =
+  option [value (toString game)] [text (Games.showGame game)]
 
 view : Model -> Html Msg
 view model =
   div []
     [ headerRow model
-    , textarea [ rows 35, placeholder "Please input game", onInput Input ] []
+    , textarea [ class "game-input", rows 35, placeholder "Please input game", onInput Input ]
+      [text model.text]
     , viewSize model
     , viewCoalisions model
-    , viewProb model
-    -- , text (toString model.qobdd)
-    -- , textarea [ rows 35, placeholder "Please input probabilities", onInput Input ] []
+    , h2 [] [text "Probabilities"]
+    , button [ onClick Random, disabled (hasQOBDD model) ] [ text "Random Probabilities" ]
+    , viewProbs model.probs
+    , h2 [] [text "Powers"]
+    , viewPowerList model
     ]
 
 viewSize : Model -> Html Msg
@@ -72,28 +91,34 @@ viewCoalisions model =
     , text (Maybe.withDefault "number of coalisions not available" (Maybe.map (toString << QOBDD.coalitions) model.qobdd))
     ]
 
-viewProb : Model -> Html Msg
-viewProb model =
+
+viewProbs : List (List Float) -> Html Msg
+viewProbs probs =
+  div [] (List.indexedMap viewProbsRow probs)
+
+viewProbsRow : Int -> List Float -> Html a
+viewProbsRow i probs =
   div []
-    [ text "Probability: "
-    , text (Maybe.withDefault "no fullsize probability"
-             (Maybe.map (\q -> toString (Probabilities.prob (probs q.vars) q)) model.qobdd))
-    -- , text (Maybe.withDefault "no fullsize probability"
-    --          (Maybe.map (\q -> toString (Probabilities.squareProbs (squareProbs q.vars) q)) model.qobdd))
-    ]
+    (text ("Player " ++ toString i ++ ": ")
+      :: [text (toString probs)])
+  --List.indexedMap (\i p -> text (toString i ++ ": " ++ toString p ++ ", ")) probs)
 
+viewPowerList : Model -> Html Msg
+viewPowerList model =
+  Maybe.withDefault (text "no powers available")
+    (Maybe.map (\q -> viewPowerListQOBDD q model.probs) model.qobdd)
 
-squareProbs : Int -> List (Dict.Dict Int Float)
-squareProbs n =
-  let ps = probs n
+viewPowerListQOBDD : QOBDD -> List (List Float) -> Html Msg
+viewPowerListQOBDD qobdd probs =
+  let probDicts = List.map (\ps -> Dict.fromList (List.indexedMap (\i p -> (i,p)) ps)) probs
+      ps = Probabilities.probs probDicts qobdd
   in
-  List.repeat n ps
+  div [class "power-list"] (List.indexedMap viewPower ps)
 
-probs : Int -> Dict.Dict Int Float
-probs n =
-  let prob = 0.5
-  in
-  Dict.fromList (List.map (\i -> (i,prob)) (List.range 0 (n-1)))
+viewPower : Int -> Float -> Html Msg
+viewPower player prob =
+  div [] [text ("Power of player " ++ toString player ++ ": " ++ toString prob)]
+
 
 subscriptions : Model -> Sub Msg
 subscriptions model = parsedMWVG Parsed

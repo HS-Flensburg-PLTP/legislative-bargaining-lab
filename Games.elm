@@ -1,15 +1,49 @@
 module Games exposing(..)
 
 
-test ="""
-3
+import Dict
+import Json.Decode as Json
+
+
+type Game = EU27 | Squares | Canadian95 | Test
+
+
+showGame : Game -> String
+showGame g =
+  case g of
+    EU27       -> "EU-27"
+    Squares    -> "Magic Squares"
+    Canadian95 -> "Canadian 95"
+    Test       -> "Simple Game"
+
+fromString : String -> Maybe Game
+fromString str = Dict.get str (Dict.fromList (List.map (\g -> (toString g,g)) games))
+
+games : List Game
+games = [EU27, Squares, Canadian95, Test]
+
+gameDefinition : Game -> String
+gameDefinition g =
+  case g of
+    EU27       -> eu27
+    Squares    -> magicSquares
+    Canadian95 -> canadian95
+    Test       -> test
+
+gameDecoder : String -> Json.Decoder Game
+gameDecoder str =
+  case fromString str of
+    Just g  -> Json.succeed g
+    Nothing -> Json.fail ("Failed to parse " ++ str)
+
+
+test ="""3
 2
 1
 1
 """
 
-canadian95 ="""
-# System to Amend the Canadian Constitution
+canadian95 ="""# System to Amend the Canadian Constitution
 #    from "Mathematics and Politics", Taylor, 1995, Springer.
 #
 7 50
@@ -25,8 +59,7 @@ canadian95 ="""
 1 1 Prince Edward Island
 """
 
-magicSquares ="""
-# 3x3 Magic Square, sum is 15 in each row/col/diag.
+magicSquares ="""# 3x3 Magic Square, sum is 15 in each row/col/diag.
 #
 # From "Mathematics and Politics", p.189
 #   by A. Taylor
@@ -55,8 +88,7 @@ magicSquares ="""
 1 1  6  6 0 0 1 (3,3)
 """
 
-eu17 ="""
-# Council of Ministers of the European Union
+eu27 ="""# Council of Ministers of the European Union
 # (Treaty of Lisbon)
 #
 # See: http://en.wikipedia.org/wiki/Treaty_of_Lisbon

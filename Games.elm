@@ -5,30 +5,32 @@ import Dict
 import Json.Decode as Json
 
 
-type Game = EU27 | Squares | Canadian95 | Test
+type Game = EU27 | Squares | Canadian95 | Test | HenningTest
 
 
 showGame : Game -> String
 showGame g =
   case g of
-    EU27       -> "EU-27"
-    Squares    -> "Magic Squares"
-    Canadian95 -> "Canadian 95"
-    Test       -> "Simple Game"
+    EU27        -> "EU-27"
+    Squares     -> "Magic Squares"
+    Canadian95  -> "Canadian 95"
+    Test        -> "Simple Game"
+    HenningTest -> "Henning Simple Game"
 
 fromString : String -> Maybe Game
 fromString str = Dict.get str (Dict.fromList (List.map (\g -> (toString g,g)) games))
 
 games : List Game
-games = [EU27, Squares, Canadian95, Test]
+games = [EU27, Squares, Canadian95, Test, HenningTest]
 
 gameDefinition : Game -> String
 gameDefinition g =
   case g of
-    EU27       -> eu27
-    Squares    -> magicSquares
-    Canadian95 -> canadian95
-    Test       -> test
+    EU27        -> eu27
+    Squares     -> magicSquares
+    Canadian95  -> canadian95
+    Test        -> test
+    HenningTest -> henningTest
 
 gameDecoder : String -> Json.Decoder Game
 gameDecoder str =
@@ -41,6 +43,14 @@ test ="""3
 2
 1
 1
+"""
+
+henningTest = """50
+36
+35
+15
+8
+6
 """
 
 canadian95 ="""# System to Amend the Canadian Constitution

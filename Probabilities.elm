@@ -8,7 +8,13 @@ import Random exposing (Generator)
 
 --
 probs : List (Dict Int Float) -> QOBDD -> List Float
-probs probs qobdd = List.map (\probs -> prob probs qobdd) probs
+probs probs qobdd = normalise (List.map (\probs -> prob probs qobdd) probs)
+
+normalise : List Float -> List Float
+normalise probs =
+  let total = List.sum probs
+  in
+  List.map (\p -> p / total) probs
 
 prob : Dict Int Float -> QOBDD -> Float
 prob probs qobdd = probTree probs qobdd.root

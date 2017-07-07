@@ -1,1 +1,1 @@
-elm-make SimpleGamesLab.elm --output=SimpleGamesLab.js
+elm-make ProbGamesLab.elm --output=ProbGamesLab.js

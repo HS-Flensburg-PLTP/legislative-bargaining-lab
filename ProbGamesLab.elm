@@ -1,4 +1,4 @@
-module SimpleGamesLab exposing (..)
+module ProbGamesLab exposing (..)
 
 import Html exposing (..)
 import Html.Attributes exposing (..)

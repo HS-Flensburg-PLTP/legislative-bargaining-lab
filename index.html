@@ -58,8 +58,8 @@
   var app = Elm.ProbGamesLab.fullscreen();
   app.ports.parseMWVG.subscribe(function(str) {
     var game = parse_mwvg(str);
-    // var qobdd = game.getWinQOBDD();
-    var qobdd = game.getMinWinQOBDD();
+    var qobdd = game.getWinQOBDD();
+    // var qobdd = game.getMinWinQOBDD();
 
     app.ports.parsedMWVGJson.send(qobdd);
   });

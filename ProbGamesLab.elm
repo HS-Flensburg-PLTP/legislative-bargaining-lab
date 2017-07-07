@@ -37,10 +37,10 @@ update msg model =
     Parse        -> (model, parseMWVG model.text)
     Display g    -> ({model | text = gameDefinition g}, Cmd.none)
     Input str    -> ({model | text = str}, Cmd.none)
-    Parsed qobdd -> ({model | qobdd = Just qobdd, probs = Probabilities.halves qobdd.vars}, Cmd.none)
+    Parsed qobdd -> ({model | qobdd = Just qobdd, probs = Probabilities.halvesDiag qobdd.vars}, Cmd.none)
     Random       ->
       case model.qobdd of
-        Just q  -> (model, Random.generate Probs (Probabilities.probsGenerator q.vars))
+        Just q  -> (model, Random.generate Probs (Probabilities.probsDiagGen q.vars))
         Nothing -> Debug.crash ""
     Probs fs    -> ({ model | probs = fs }, Cmd.none)
 
@@ -100,8 +100,11 @@ viewProbsRow : Int -> List Float -> Html a
 viewProbsRow i probs =
   div []
     (text ("Player " ++ toString i ++ ": ")
-      :: [text (toString probs)])
-  --List.indexedMap (\i p -> text (toString i ++ ": " ++ toString p ++ ", ")) probs)
+      :: [text (String.concat (List.intersperse ", " (List.map viewProb probs)))])
+
+viewProb : Float -> String
+viewProb f = toString f
+
 
 viewPowerList : Model -> Html Msg
 viewPowerList model =

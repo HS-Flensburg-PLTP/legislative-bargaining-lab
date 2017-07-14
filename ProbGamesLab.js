@@ -9051,93 +9051,6 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
-var _user$project$Games$eu27 = '# Council of Ministers of the European Union\n# (Treaty of Lisbon)\n#\n# See: http://en.wikipedia.org/wiki/Treaty_of_Lisbon\n# (Number of Votes AND Population) OR (Blocking Miniority)\n%join ((1 AND 2) OR 3) AND 4\n%type binary\n# 55% and 65% or at least at most four not supporting it\n15 32400 24 376\n1 8200 1 0 Germany\n1 6400 1 0 France\n1 6200 1 0 United\n1 6000 1 0 Italy\n1 4500 1 0 Spain\n1 3800 1 0 Poland\n1 2100 1 0 Romania\n1 1700 1 0 Netherlands\n1 1100 1 0 Greece\n1 1100 1 0 Portugal\n1 1100 1 0 Belgium\n1 1000 1 0 Czech\n1 1000 1 0 Hungary\n1 920 1 0 Sweden\n1 830 1 0 Austria\n1 760 1 0 Bulgaria\n1 550 1 0 Denmark\n1 540 1 0 Slovakia\n1 530 1 0 Finland\n1 450 1 0 Ireland\n1 330 1 0 Lithuania\n1 220 1 0 Latvia\n1 200 1 0 Slovenia\n1 130 1 0 Estonia\n1 87 1 0 Cyprus\n1 49 1 0 Luxembourg\n1 41 1 0 Malta\n0 0 0 217 EPP\n0 0 0 189 S and D\n0 0 0 74 ECR\n0 0 0 68 ALDE\n0 0 0 52 GUE NGL\n0 0 0 51 Greens EFA\n0 0 0 42 EFDD\n0 0 0 40 ENF\n0 0 0 18 Non Inscrits\n';
-var _user$project$Games$magicSquares = '# 3x3 Magic Square, sum is 15 in each row/col/diag.\n#\n# From \"Mathematics and Politics\", p.189\n#   by A. Taylor\n#\n# 4 3 8\n# 9 5 1\n# 2 7 6\n#\n# Players are the 9 fields. A coalition is winning, iff\n#   1) it has 4 or more players, or\n#   2) it\'s weight is strictly greater than 15, or\n#   3) it\'s weight is exactly 15 and it\'s a row.\n# Additionally, each coalition must have at least 3 players Otherwise, it is\n# losing.\n#\n%join 1 OR (2 AND 3) OR (5 OR 6 OR 7)\n4 3 16 15 3 3 3\n1 1  4  4 1 0 0 (1,1)\n1 1  3  3 1 0 0 (1,2)\n1 1  8  8 1 0 0 (1,3)\n1 1  9  9 0 1 0 (2,1)\n1 1  5  5 0 1 0 (2,2)\n1 1  1  1 0 1 0 (2,3)\n1 1  2  2 0 0 1 (3,1)\n1 1  7  7 0 0 1 (3,2)\n1 1  6  6 0 0 1 (3,3)\n';
-var _user$project$Games$canadian95 = '# System to Amend the Canadian Constitution\n#    from \"Mathematics and Politics\", Taylor, 1995, Springer.\n#\n7 50\n1 34 Ontario\n1 29 Quebec\n1 9 British Columbia\n1 7 Alberta\n1 5 Saskatchewan\n1 5 Manitoba\n1 4 Nova Scotia\n1 3 New Brunswick\n1 3 Newfoundland\n1 1 Prince Edward Island\n';
-var _user$project$Games$henningTest = '50\n36\n35\n15\n8\n6\n';
-var _user$project$Games$test = '3\n2\n1\n1\n';
-var _user$project$Games$gameDefinition = function (g) {
-	var _p0 = g;
-	switch (_p0.ctor) {
-		case 'EU27':
-			return _user$project$Games$eu27;
-		case 'Squares':
-			return _user$project$Games$magicSquares;
-		case 'Canadian95':
-			return _user$project$Games$canadian95;
-		case 'Test':
-			return _user$project$Games$test;
-		default:
-			return _user$project$Games$henningTest;
-	}
-};
-var _user$project$Games$showGame = function (g) {
-	var _p1 = g;
-	switch (_p1.ctor) {
-		case 'EU27':
-			return 'EU-27';
-		case 'Squares':
-			return 'Magic Squares';
-		case 'Canadian95':
-			return 'Canadian 95';
-		case 'Test':
-			return 'Simple Game';
-		default:
-			return 'Henning Simple Game';
-	}
-};
-var _user$project$Games$HenningTest = {ctor: 'HenningTest'};
-var _user$project$Games$Test = {ctor: 'Test'};
-var _user$project$Games$Canadian95 = {ctor: 'Canadian95'};
-var _user$project$Games$Squares = {ctor: 'Squares'};
-var _user$project$Games$EU27 = {ctor: 'EU27'};
-var _user$project$Games$games = {
-	ctor: '::',
-	_0: _user$project$Games$EU27,
-	_1: {
-		ctor: '::',
-		_0: _user$project$Games$Squares,
-		_1: {
-			ctor: '::',
-			_0: _user$project$Games$Canadian95,
-			_1: {
-				ctor: '::',
-				_0: _user$project$Games$Test,
-				_1: {
-					ctor: '::',
-					_0: _user$project$Games$HenningTest,
-					_1: {ctor: '[]'}
-				}
-			}
-		}
-	}
-};
-var _user$project$Games$fromString = function (str) {
-	return A2(
-		_elm_lang$core$Dict$get,
-		str,
-		_elm_lang$core$Dict$fromList(
-			A2(
-				_elm_lang$core$List$map,
-				function (g) {
-					return {
-						ctor: '_Tuple2',
-						_0: _elm_lang$core$Basics$toString(g),
-						_1: g
-					};
-				},
-				_user$project$Games$games)));
-};
-var _user$project$Games$gameDecoder = function (str) {
-	var _p2 = _user$project$Games$fromString(str);
-	if (_p2.ctor === 'Just') {
-		return _elm_lang$core$Json_Decode$succeed(_p2._0);
-	} else {
-		return _elm_lang$core$Json_Decode$fail(
-			A2(_elm_lang$core$Basics_ops['++'], 'Failed to parse ', str));
-	}
-};
-
 var _user$project$QOBDD$foldTreeShareDict = F5(
 	function (dict1, zero, one, node, tree) {
 		var _p0 = tree;
@@ -9167,8 +9080,8 @@ var _user$project$QOBDD$foldTreeShareDict = F5(
 					return _elm_lang$core$Native_Utils.crashCase(
 						'QOBDD',
 						{
-							start: {line: 70, column: 7},
-							end: {line: 72, column: 29}
+							start: {line: 111, column: 13},
+							end: {line: 116, column: 33}
 						},
 						_p4)(
 						A2(
@@ -9385,12 +9298,323 @@ var _user$project$QOBDD$parsedMWVG = function (f) {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'QOBDD',
 					{
-						start: {line: 145, column: 25},
-						end: {line: 147, column: 61}
+						start: {line: 227, column: 13},
+						end: {line: 232, column: 46}
 					},
 					_p20)('Parse error');
 			}
 		});
+};
+
+var _user$project$GAMS$vars = function (n) {
+	return _elm_lang$core$Dict$fromList(
+		A2(
+			_elm_lang$core$List$map,
+			function (i) {
+				return {
+					ctor: '_Tuple2',
+					_0: i,
+					_1: A2(
+						_elm_lang$core$Basics_ops['++'],
+						'p(1,',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_elm_lang$core$Basics$toString(i),
+							')'))
+				};
+			},
+			A2(_elm_lang$core$List$range, 0, n - 1)));
+};
+var _user$project$GAMS$prettyOp = function (op) {
+	var _p0 = op;
+	switch (_p0.ctor) {
+		case 'Mult':
+			return '*';
+		case 'Add':
+			return '+';
+		default:
+			return '-';
+	}
+};
+var _user$project$GAMS$prettyExp = function (exp) {
+	var _p1 = exp;
+	switch (_p1.ctor) {
+		case 'Num':
+			return _elm_lang$core$Basics$toString(_p1._0);
+		case 'Var':
+			return _p1._0;
+		default:
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				'(',
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					_user$project$GAMS$prettyExp(_p1._1),
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						' ',
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							_user$project$GAMS$prettyOp(_p1._0),
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								' ',
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									_user$project$GAMS$prettyExp(_p1._2),
+									')'))))));
+	}
+};
+var _user$project$GAMS$prettyStmt = function (stmt) {
+	var _p2 = stmt;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_p2._0,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' = ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$GAMS$prettyExp(_p2._1),
+				';\n')));
+};
+var _user$project$GAMS$prettyStmts = function (stmts) {
+	return _elm_lang$core$String$concat(
+		A2(_elm_lang$core$List$map, _user$project$GAMS$prettyStmt, stmts));
+};
+var _user$project$GAMS$Minus = {ctor: 'Minus'};
+var _user$project$GAMS$Add = {ctor: 'Add'};
+var _user$project$GAMS$Mult = {ctor: 'Mult'};
+var _user$project$GAMS$BinOp = F3(
+	function (a, b, c) {
+		return {ctor: 'BinOp', _0: a, _1: b, _2: c};
+	});
+var _user$project$GAMS$add = _user$project$GAMS$BinOp(_user$project$GAMS$Add);
+var _user$project$GAMS$minus = _user$project$GAMS$BinOp(_user$project$GAMS$Minus);
+var _user$project$GAMS$mult = _user$project$GAMS$BinOp(_user$project$GAMS$Mult);
+var _user$project$GAMS$Var = function (a) {
+	return {ctor: 'Var', _0: a};
+};
+var _user$project$GAMS$Num = function (a) {
+	return {ctor: 'Num', _0: a};
+};
+var _user$project$GAMS$Assign = F2(
+	function (a, b) {
+		return {ctor: 'Assign', _0: a, _1: b};
+	});
+var _user$project$GAMS_ops = _user$project$GAMS_ops || {};
+_user$project$GAMS_ops[':='] = F2(
+	function ($var, exp) {
+		return A2(_user$project$GAMS$Assign, $var, exp);
+	});
+var _user$project$GAMS$stmtTree = function (vars) {
+	var ident = function (i) {
+		var _p3 = A2(_elm_lang$core$Dict$get, i, vars);
+		if (_p3.ctor === 'Nothing') {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'GAMS',
+				{
+					start: {line: 103, column: 13},
+					end: {line: 108, column: 22}
+				},
+				_p3)(
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'Error: ',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_elm_lang$core$Basics$toString(i),
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							' not found in ',
+							_elm_lang$core$Basics$toString(vars)))));
+		} else {
+			return _p3._0;
+		}
+	};
+	var term = function (i) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			't_',
+			_elm_lang$core$Basics$toString(i));
+	};
+	var ref = function (i) {
+		return {
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: term(i)
+		};
+	};
+	var node = F4(
+		function (label, i, _p6, _p5) {
+			var _p7 = _p6;
+			var _p8 = _p5;
+			var assignment = A2(
+				_user$project$GAMS_ops[':='],
+				term(i),
+				A2(
+					_user$project$GAMS$add,
+					A2(
+						_user$project$GAMS$mult,
+						_user$project$GAMS$Var(
+							ident(label)),
+						_user$project$GAMS$Var(_p7._1)),
+					A2(
+						_user$project$GAMS$mult,
+						A2(
+							_user$project$GAMS$minus,
+							_user$project$GAMS$Num(1),
+							_user$project$GAMS$Var(
+								ident(label))),
+						_user$project$GAMS$Var(_p8._1))));
+			return {
+				ctor: '_Tuple2',
+				_0: A2(
+					_elm_lang$core$Basics_ops['++'],
+					_p7._0,
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p8._0,
+						{
+							ctor: '::',
+							_0: assignment,
+							_1: {ctor: '[]'}
+						})),
+				_1: term(i)
+			};
+		});
+	return A4(
+		_user$project$QOBDD$foldTree,
+		{
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: 'zero'
+		},
+		{
+			ctor: '_Tuple2',
+			_0: {ctor: '[]'},
+			_1: 'one'
+		},
+		ref,
+		node);
+};
+var _user$project$GAMS$stmt = F2(
+	function (vars, qobdd) {
+		var _p9 = A2(_user$project$GAMS$stmtTree, vars, qobdd.root);
+		var stmts = _p9._0;
+		var v = _p9._1;
+		return {
+			ctor: '::',
+			_0: A2(
+				_user$project$GAMS_ops[':='],
+				'zero',
+				_user$project$GAMS$Num(0)),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_user$project$GAMS_ops[':='],
+					'one',
+					_user$project$GAMS$Num(1)),
+				_1: A2(
+					_elm_lang$core$Basics_ops['++'],
+					stmts,
+					{
+						ctor: '::',
+						_0: A2(
+							_user$project$GAMS_ops[':='],
+							'r',
+							_user$project$GAMS$Var(v)),
+						_1: {ctor: '[]'}
+					})
+			}
+		};
+	});
+
+var _user$project$Games$eu27 = '# Council of Ministers of the European Union\n# (Treaty of Lisbon)\n#\n# See: http://en.wikipedia.org/wiki/Treaty_of_Lisbon\n# (Number of Votes AND Population) OR (Blocking Miniority)\n%join ((1 AND 2) OR 3) AND 4\n%type binary\n# 55% and 65% or at least at most four not supporting it\n15 32400 24 376\n1 8200 1 0 Germany\n1 6400 1 0 France\n1 6200 1 0 United\n1 6000 1 0 Italy\n1 4500 1 0 Spain\n1 3800 1 0 Poland\n1 2100 1 0 Romania\n1 1700 1 0 Netherlands\n1 1100 1 0 Greece\n1 1100 1 0 Portugal\n1 1100 1 0 Belgium\n1 1000 1 0 Czech\n1 1000 1 0 Hungary\n1 920 1 0 Sweden\n1 830 1 0 Austria\n1 760 1 0 Bulgaria\n1 550 1 0 Denmark\n1 540 1 0 Slovakia\n1 530 1 0 Finland\n1 450 1 0 Ireland\n1 330 1 0 Lithuania\n1 220 1 0 Latvia\n1 200 1 0 Slovenia\n1 130 1 0 Estonia\n1 87 1 0 Cyprus\n1 49 1 0 Luxembourg\n1 41 1 0 Malta\n0 0 0 217 EPP\n0 0 0 189 S and D\n0 0 0 74 ECR\n0 0 0 68 ALDE\n0 0 0 52 GUE NGL\n0 0 0 51 Greens EFA\n0 0 0 42 EFDD\n0 0 0 40 ENF\n0 0 0 18 Non Inscrits\n';
+var _user$project$Games$magicSquares = '# 3x3 Magic Square, sum is 15 in each row/col/diag.\n#\n# From \"Mathematics and Politics\", p.189\n#   by A. Taylor\n#\n# 4 3 8\n# 9 5 1\n# 2 7 6\n#\n# Players are the 9 fields. A coalition is winning, iff\n#   1) it has 4 or more players, or\n#   2) it\'s weight is strictly greater than 15, or\n#   3) it\'s weight is exactly 15 and it\'s a row.\n# Additionally, each coalition must have at least 3 players Otherwise, it is\n# losing.\n#\n%join 1 OR (2 AND 3) OR (5 OR 6 OR 7)\n4 3 16 15 3 3 3\n1 1  4  4 1 0 0 (1,1)\n1 1  3  3 1 0 0 (1,2)\n1 1  8  8 1 0 0 (1,3)\n1 1  9  9 0 1 0 (2,1)\n1 1  5  5 0 1 0 (2,2)\n1 1  1  1 0 1 0 (2,3)\n1 1  2  2 0 0 1 (3,1)\n1 1  7  7 0 0 1 (3,2)\n1 1  6  6 0 0 1 (3,3)\n';
+var _user$project$Games$canadian95 = '# System to Amend the Canadian Constitution\n#    from \"Mathematics and Politics\", Taylor, 1995, Springer.\n#\n7 50\n1 34 Ontario\n1 29 Quebec\n1 9 British Columbia\n1 7 Alberta\n1 5 Saskatchewan\n1 5 Manitoba\n1 4 Nova Scotia\n1 3 New Brunswick\n1 3 Newfoundland\n1 1 Prince Edward Island\n';
+var _user$project$Games$henningTest = '50\n36\n35\n15\n8\n6\n';
+var _user$project$Games$test = '3\n2\n1\n1\n';
+var _user$project$Games$gameDefinition = function (g) {
+	var _p0 = g;
+	switch (_p0.ctor) {
+		case 'EU27':
+			return _user$project$Games$eu27;
+		case 'Squares':
+			return _user$project$Games$magicSquares;
+		case 'Canadian95':
+			return _user$project$Games$canadian95;
+		case 'Test':
+			return _user$project$Games$test;
+		default:
+			return _user$project$Games$henningTest;
+	}
+};
+var _user$project$Games$showGame = function (g) {
+	var _p1 = g;
+	switch (_p1.ctor) {
+		case 'EU27':
+			return 'EU-27';
+		case 'Squares':
+			return 'Magic Squares';
+		case 'Canadian95':
+			return 'Canadian 95';
+		case 'Test':
+			return 'Simple Game';
+		default:
+			return 'Henning Simple Game';
+	}
+};
+var _user$project$Games$HenningTest = {ctor: 'HenningTest'};
+var _user$project$Games$Test = {ctor: 'Test'};
+var _user$project$Games$Canadian95 = {ctor: 'Canadian95'};
+var _user$project$Games$Squares = {ctor: 'Squares'};
+var _user$project$Games$EU27 = {ctor: 'EU27'};
+var _user$project$Games$games = {
+	ctor: '::',
+	_0: _user$project$Games$EU27,
+	_1: {
+		ctor: '::',
+		_0: _user$project$Games$Squares,
+		_1: {
+			ctor: '::',
+			_0: _user$project$Games$Canadian95,
+			_1: {
+				ctor: '::',
+				_0: _user$project$Games$Test,
+				_1: {
+					ctor: '::',
+					_0: _user$project$Games$HenningTest,
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	}
+};
+var _user$project$Games$fromString = function (str) {
+	return A2(
+		_elm_lang$core$Dict$get,
+		str,
+		_elm_lang$core$Dict$fromList(
+			A2(
+				_elm_lang$core$List$map,
+				function (g) {
+					return {
+						ctor: '_Tuple2',
+						_0: _elm_lang$core$Basics$toString(g),
+						_1: g
+					};
+				},
+				_user$project$Games$games)));
+};
+var _user$project$Games$gameDecoder = function (str) {
+	var _p2 = _user$project$Games$fromString(str);
+	if (_p2.ctor === 'Just') {
+		return _elm_lang$core$Json_Decode$succeed(_p2._0);
+	} else {
+		return _elm_lang$core$Json_Decode$fail(
+			A2(_elm_lang$core$Basics_ops['++'], 'Failed to parse ', str));
+	}
 };
 
 var _user$project$Probabilities$probsGen = function (n) {
@@ -9586,6 +9810,36 @@ var _user$project$ProbGamesLab$viewProbs = function (probs) {
 		{ctor: '[]'},
 		A2(_elm_lang$core$List$indexedMap, _user$project$ProbGamesLab$viewProbsRow, probs));
 };
+var _user$project$ProbGamesLab$viewFormula = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$pre,
+				{ctor: '[]'},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text(
+						A2(
+							_elm_lang$core$Maybe$withDefault,
+							'formula not available',
+							A2(
+								_elm_lang$core$Maybe$map,
+								function (o) {
+									return _user$project$GAMS$prettyStmts(
+										A2(
+											_user$project$GAMS$stmt,
+											_user$project$GAMS$vars(o.vars),
+											o));
+								},
+								model.qobdd))),
+					_1: {ctor: '[]'}
+				}),
+			_1: {ctor: '[]'}
+		});
+};
 var _user$project$ProbGamesLab$viewCoalisions = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
@@ -9762,8 +10016,8 @@ var _user$project$ProbGamesLab$update = F2(
 					return _elm_lang$core$Native_Utils.crashCase(
 						'ProbGamesLab',
 						{
-							start: {line: 42, column: 7},
-							end: {line: 44, column: 34}
+							start: {line: 71, column: 13},
+							end: {line: 76, column: 35}
 						},
 						_p5)('');
 				}
@@ -9878,48 +10132,13 @@ var _user$project$ProbGamesLab$view = function (model) {
 								{ctor: '[]'},
 								{
 									ctor: '::',
-									_0: _elm_lang$html$Html$text('Probabilities'),
+									_0: _elm_lang$html$Html$text('Formula'),
 									_1: {ctor: '[]'}
 								}),
 							_1: {
 								ctor: '::',
-								_0: A2(
-									_elm_lang$html$Html$button,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(_user$project$ProbGamesLab$Random),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$disabled(
-												_user$project$ProbGamesLab$hasQOBDD(model)),
-											_1: {ctor: '[]'}
-										}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text('Random Probabilities'),
-										_1: {ctor: '[]'}
-									}),
-								_1: {
-									ctor: '::',
-									_0: _user$project$ProbGamesLab$viewProbs(model.probs),
-									_1: {
-										ctor: '::',
-										_0: A2(
-											_elm_lang$html$Html$h2,
-											{ctor: '[]'},
-											{
-												ctor: '::',
-												_0: _elm_lang$html$Html$text('Powers'),
-												_1: {ctor: '[]'}
-											}),
-										_1: {
-											ctor: '::',
-											_0: _user$project$ProbGamesLab$viewPowerList(model),
-											_1: {ctor: '[]'}
-										}
-									}
-								}
+								_0: _user$project$ProbGamesLab$viewFormula(model),
+								_1: {ctor: '[]'}
 							}
 						}
 					}

@@ -9306,6 +9306,20 @@ var _user$project$QOBDD$parsedMWVG = function (f) {
 		});
 };
 
+var _user$project$GAMS$setVars = function (vars) {
+	var context = function (v) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			'set nodes /',
+			A2(_elm_lang$core$Basics_ops['++'], v, '/'));
+	};
+	return context(
+		_elm_lang$core$String$concat(
+			A2(
+				_elm_lang$core$List$intersperse,
+				', ',
+				A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, vars))));
+};
 var _user$project$GAMS$vars = function (n) {
 	return _elm_lang$core$Dict$fromList(
 		A2(
@@ -9316,11 +9330,11 @@ var _user$project$GAMS$vars = function (n) {
 					_0: i,
 					_1: A2(
 						_elm_lang$core$Basics_ops['++'],
-						'p(1,',
+						'p0(\"',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							_elm_lang$core$Basics$toString(i),
-							')'))
+							'\", g)'))
 				};
 			},
 			A2(_elm_lang$core$List$range, 0, n - 1)));
@@ -9414,8 +9428,8 @@ var _user$project$GAMS$stmtTree = function (vars) {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'GAMS',
 				{
-					start: {line: 103, column: 13},
-					end: {line: 108, column: 22}
+					start: {line: 116, column: 13},
+					end: {line: 121, column: 22}
 				},
 				_p3)(
 				A2(
@@ -9435,14 +9449,19 @@ var _user$project$GAMS$stmtTree = function (vars) {
 	var term = function (i) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
-			't_',
-			_elm_lang$core$Basics$toString(i));
+			't(g, \"',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(i),
+				'\")'));
 	};
 	var ref = function (i) {
 		return {
-			ctor: '_Tuple2',
+			ctor: '_Tuple3',
 			_0: {ctor: '[]'},
-			_1: term(i)
+			_1: _user$project$GAMS$Var(
+				term(i)),
+			_2: {ctor: '[]'}
 		};
 	};
 	var node = F4(
@@ -9458,7 +9477,7 @@ var _user$project$GAMS$stmtTree = function (vars) {
 						_user$project$GAMS$mult,
 						_user$project$GAMS$Var(
 							ident(label)),
-						_user$project$GAMS$Var(_p7._1)),
+						_p7._1),
 					A2(
 						_user$project$GAMS$mult,
 						A2(
@@ -9466,9 +9485,9 @@ var _user$project$GAMS$stmtTree = function (vars) {
 							_user$project$GAMS$Num(1),
 							_user$project$GAMS$Var(
 								ident(label))),
-						_user$project$GAMS$Var(_p8._1))));
+						_p8._1)));
 			return {
-				ctor: '_Tuple2',
+				ctor: '_Tuple3',
 				_0: A2(
 					_elm_lang$core$Basics_ops['++'],
 					_p7._0,
@@ -9480,55 +9499,53 @@ var _user$project$GAMS$stmtTree = function (vars) {
 							_0: assignment,
 							_1: {ctor: '[]'}
 						})),
-				_1: term(i)
+				_1: _user$project$GAMS$Var(
+					term(i)),
+				_2: {
+					ctor: '::',
+					_0: i,
+					_1: A2(_elm_lang$core$Basics_ops['++'], _p7._2, _p8._2)
+				}
 			};
 		});
 	return A4(
 		_user$project$QOBDD$foldTree,
 		{
-			ctor: '_Tuple2',
+			ctor: '_Tuple3',
 			_0: {ctor: '[]'},
-			_1: 'zero'
+			_1: _user$project$GAMS$Num(0),
+			_2: {ctor: '[]'}
 		},
 		{
-			ctor: '_Tuple2',
+			ctor: '_Tuple3',
 			_0: {ctor: '[]'},
-			_1: 'one'
+			_1: _user$project$GAMS$Num(1),
+			_2: {ctor: '[]'}
 		},
 		ref,
 		node);
 };
-var _user$project$GAMS$stmt = F2(
-	function (vars, qobdd) {
-		var _p9 = A2(_user$project$GAMS$stmtTree, vars, qobdd.root);
-		var stmts = _p9._0;
-		var v = _p9._1;
-		return {
-			ctor: '::',
-			_0: A2(
-				_user$project$GAMS_ops[':='],
-				'zero',
-				_user$project$GAMS$Num(0)),
-			_1: {
+var _user$project$GAMS$stmt = function (qobdd) {
+	var _p9 = A2(
+		_user$project$GAMS$stmtTree,
+		_user$project$GAMS$vars(qobdd.vars),
+		qobdd.root);
+	var stmts = _p9._0;
+	var v = _p9._1;
+	var vs = _p9._2;
+	return {
+		ctor: '_Tuple2',
+		_0: A2(
+			_elm_lang$core$Basics_ops['++'],
+			stmts,
+			{
 				ctor: '::',
-				_0: A2(
-					_user$project$GAMS_ops[':='],
-					'one',
-					_user$project$GAMS$Num(1)),
-				_1: A2(
-					_elm_lang$core$Basics_ops['++'],
-					stmts,
-					{
-						ctor: '::',
-						_0: A2(
-							_user$project$GAMS_ops[':='],
-							'r',
-							_user$project$GAMS$Var(v)),
-						_1: {ctor: '[]'}
-					})
-			}
-		};
-	});
+				_0: A2(_user$project$GAMS_ops[':='], '%1', v),
+				_1: {ctor: '[]'}
+			}),
+		_1: _user$project$GAMS$setVars(vs)
+	};
+};
 
 var _user$project$Games$eu27 = '# Council of Ministers of the European Union\n# (Treaty of Lisbon)\n#\n# See: http://en.wikipedia.org/wiki/Treaty_of_Lisbon\n# (Number of Votes AND Population) OR (Blocking Miniority)\n%join ((1 AND 2) OR 3) AND 4\n%type binary\n# 55% and 65% or at least at most four not supporting it\n15 32400 24 376\n1 8200 1 0 Germany\n1 6400 1 0 France\n1 6200 1 0 United\n1 6000 1 0 Italy\n1 4500 1 0 Spain\n1 3800 1 0 Poland\n1 2100 1 0 Romania\n1 1700 1 0 Netherlands\n1 1100 1 0 Greece\n1 1100 1 0 Portugal\n1 1100 1 0 Belgium\n1 1000 1 0 Czech\n1 1000 1 0 Hungary\n1 920 1 0 Sweden\n1 830 1 0 Austria\n1 760 1 0 Bulgaria\n1 550 1 0 Denmark\n1 540 1 0 Slovakia\n1 530 1 0 Finland\n1 450 1 0 Ireland\n1 330 1 0 Lithuania\n1 220 1 0 Latvia\n1 200 1 0 Slovenia\n1 130 1 0 Estonia\n1 87 1 0 Cyprus\n1 49 1 0 Luxembourg\n1 41 1 0 Malta\n0 0 0 217 EPP\n0 0 0 189 S and D\n0 0 0 74 ECR\n0 0 0 68 ALDE\n0 0 0 52 GUE NGL\n0 0 0 51 Greens EFA\n0 0 0 42 EFDD\n0 0 0 40 ENF\n0 0 0 18 Non Inscrits\n';
 var _user$project$Games$magicSquares = '# 3x3 Magic Square, sum is 15 in each row/col/diag.\n#\n# From \"Mathematics and Politics\", p.189\n#   by A. Taylor\n#\n# 4 3 8\n# 9 5 1\n# 2 7 6\n#\n# Players are the 9 fields. A coalition is winning, iff\n#   1) it has 4 or more players, or\n#   2) it\'s weight is strictly greater than 15, or\n#   3) it\'s weight is exactly 15 and it\'s a row.\n# Additionally, each coalition must have at least 3 players Otherwise, it is\n# losing.\n#\n%join 1 OR (2 AND 3) OR (5 OR 6 OR 7)\n4 3 16 15 3 3 3\n1 1  4  4 1 0 0 (1,1)\n1 1  3  3 1 0 0 (1,2)\n1 1  8  8 1 0 0 (1,3)\n1 1  9  9 0 1 0 (2,1)\n1 1  5  5 0 1 0 (2,2)\n1 1  1  1 0 1 0 (2,3)\n1 1  2  2 0 0 1 (3,1)\n1 1  7  7 0 0 1 (3,2)\n1 1  6  6 0 0 1 (3,3)\n';
@@ -9811,6 +9828,16 @@ var _user$project$ProbGamesLab$viewProbs = function (probs) {
 		A2(_elm_lang$core$List$indexedMap, _user$project$ProbGamesLab$viewProbsRow, probs));
 };
 var _user$project$ProbGamesLab$viewFormula = function (model) {
+	var resultToString = function (_p0) {
+		var _p1 = _p0;
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			_p1._1,
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'\n\n',
+				_user$project$GAMS$prettyStmts(_p1._0)));
+	};
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -9828,11 +9855,8 @@ var _user$project$ProbGamesLab$viewFormula = function (model) {
 							A2(
 								_elm_lang$core$Maybe$map,
 								function (o) {
-									return _user$project$GAMS$prettyStmts(
-										A2(
-											_user$project$GAMS$stmt,
-											_user$project$GAMS$vars(o.vars),
-											o));
+									return resultToString(
+										_user$project$GAMS$stmt(o));
 								},
 								model.qobdd))),
 					_1: {ctor: '[]'}
@@ -9855,9 +9879,9 @@ var _user$project$ProbGamesLab$viewCoalisions = function (model) {
 						'number of coalisions not available',
 						A2(
 							_elm_lang$core$Maybe$map,
-							function (_p0) {
+							function (_p2) {
 								return _elm_lang$core$Basics$toString(
-									_user$project$QOBDD$coalitions(_p0));
+									_user$project$QOBDD$coalitions(_p2));
 							},
 							model.qobdd))),
 				_1: {ctor: '[]'}
@@ -9879,9 +9903,9 @@ var _user$project$ProbGamesLab$viewSize = function (model) {
 						'no size available',
 						A2(
 							_elm_lang$core$Maybe$map,
-							function (_p1) {
+							function (_p3) {
 								return _elm_lang$core$Basics$toString(
-									_user$project$QOBDD$size(_p1));
+									_user$project$QOBDD$size(_p3));
 							},
 							model.qobdd))),
 				_1: {ctor: '[]'}
@@ -9941,8 +9965,8 @@ var _user$project$ProbGamesLab$hasText = function (model) {
 	return _elm_lang$core$String$isEmpty(model.text);
 };
 var _user$project$ProbGamesLab$hasQOBDD = function (model) {
-	var _p2 = model.qobdd;
-	if (_p2.ctor === 'Nothing') {
+	var _p4 = model.qobdd;
+	if (_p4.ctor === 'Nothing') {
 		return true;
 	} else {
 		return false;
@@ -9963,8 +9987,8 @@ var _user$project$ProbGamesLab$Probs = function (a) {
 };
 var _user$project$ProbGamesLab$update = F2(
 	function (msg, model) {
-		var _p3 = msg;
-		switch (_p3.ctor) {
+		var _p5 = msg;
+		switch (_p5.ctor) {
 			case 'Parse':
 				return {
 					ctor: '_Tuple2',
@@ -9977,7 +10001,7 @@ var _user$project$ProbGamesLab$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							text: _user$project$Games$gameDefinition(_p3._0)
+							text: _user$project$Games$gameDefinition(_p5._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -9986,31 +10010,31 @@ var _user$project$ProbGamesLab$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{text: _p3._0}),
+						{text: _p5._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Parsed':
-				var _p4 = _p3._0;
+				var _p6 = _p5._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							qobdd: _elm_lang$core$Maybe$Just(_p4),
-							probs: _user$project$Probabilities$halvesDiag(_p4.vars)
+							qobdd: _elm_lang$core$Maybe$Just(_p6),
+							probs: _user$project$Probabilities$halvesDiag(_p6.vars)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Random':
-				var _p5 = model.qobdd;
-				if (_p5.ctor === 'Just') {
+				var _p7 = model.qobdd;
+				if (_p7.ctor === 'Just') {
 					return {
 						ctor: '_Tuple2',
 						_0: model,
 						_1: A2(
 							_elm_lang$core$Random$generate,
 							_user$project$ProbGamesLab$Probs,
-							_user$project$Probabilities$probsDiagGen(_p5._0.vars))
+							_user$project$Probabilities$probsDiagGen(_p7._0.vars))
 					};
 				} else {
 					return _elm_lang$core$Native_Utils.crashCase(
@@ -10019,14 +10043,14 @@ var _user$project$ProbGamesLab$update = F2(
 							start: {line: 71, column: 13},
 							end: {line: 76, column: 35}
 						},
-						_p5)('');
+						_p7)('');
 				}
 			default:
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{probs: _p3._0}),
+						{probs: _p5._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}

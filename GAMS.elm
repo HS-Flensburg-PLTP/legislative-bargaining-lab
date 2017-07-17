@@ -80,26 +80,39 @@ prettyStmt stmt =
 
 vars : Int -> Dict Int String
 vars n =
-    Dict.fromList (List.map (\i -> ( i, "p(1," ++ toString i ++ ")" )) (List.range 0 (n - 1)))
+    Dict.fromList (List.map (\i -> ( i, "p0(\"" ++ toString i ++ "\", g)" )) (List.range 0 (n - 1)))
 
 
-stmt : Dict Int String -> QOBDD -> List Stmt
-stmt vars qobdd =
+stmt : QOBDD -> ( List Stmt, String )
+stmt qobdd =
     let
-        ( stmts, v ) =
-            stmtTree vars qobdd.root
+        ( stmts, v, vs ) =
+            stmtTree (vars qobdd.vars) qobdd.root
     in
-    "zero" := Num 0 :: "one" := Num 1 :: stmts ++ [ "r" := Var v ]
+    ( stmts ++ [ "%1" := v ], setVars vs )
 
 
-stmtTree : Dict Int String -> Tree -> ( List Stmt, String )
+
+-- Generates a string in the form of
+-- set nodes /19588, 19586, 19590, 19582, 19584, 19592/;
+
+
+setVars : List Int -> String
+setVars vars =
+    let
+        context v =
+            "set nodes /" ++ v ++ "/"
+    in
+    context (String.concat <| List.intersperse ", " <| List.map toString vars)
+
+
+stmtTree : Dict Int String -> Tree -> ( List Stmt, Exp, List Int )
 stmtTree vars =
     let
         term i =
-            "t_" ++ toString i
+            "t(g, \"" ++ toString i ++ "\")"
 
         ident i =
-            --     "p_" ++ toString i
             case Dict.get i vars of
                 Nothing ->
                     Debug.crash ("Error: " ++ toString i ++ " not found in " ++ toString vars)
@@ -108,13 +121,13 @@ stmtTree vars =
                     v
 
         ref i =
-            ( [], term i )
+            ( [], Var (term i), [] )
 
-        node label i ( s1, v1 ) ( s2, v2 ) =
+        node label i ( s1, v1, vars1 ) ( s2, v2, vars2 ) =
             let
                 assignment =
-                    term i := add (mult (Var (ident label)) (Var v1)) (mult (minus (Num 1) (Var (ident label))) (Var v2))
+                    term i := add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)
             in
-            ( s1 ++ s2 ++ [ assignment ], term i )
+            ( s1 ++ s2 ++ [ assignment ], Var (term i), i :: vars1 ++ vars2 )
     in
-    QOBDD.foldTree ( [], "zero" ) ( [], "one" ) ref node
+    QOBDD.foldTree ( [], Num 0, [] ) ( [], Num 1, [] ) ref node

@@ -1,5 +1,6 @@
 module ProbGamesLab exposing (..)
 
+import Coalitions exposing (..)
 import Dict
 import GAMS
 import Games exposing (Game(..), gameDecoder, gameDefinition, games)
@@ -110,6 +111,7 @@ view model =
         , viewCoalisions model
         , h2 [] [ text "Formula" ]
         , viewFormula model
+        , viewPaths model.qobdd
 
         -- , h2 [] [ text "Probabilities" ]
         -- , button [ onClick Random, disabled (hasQOBDD model) ] [ text "Random Probabilities" ]
@@ -184,6 +186,11 @@ viewPowerListQOBDD qobdd probs =
 viewPower : Int -> Float -> Html Msg
 viewPower player prob =
     div [] [ text ("Power of player " ++ toString player ++ ": " ++ toString prob) ]
+
+
+viewPaths : Maybe QOBDD -> Html Msg
+viewPaths mqobdd =
+    text (Maybe.withDefault "no paths" (Maybe.map (toString << paths << .bdd) mqobdd))
 
 
 subscriptions : Model -> Sub Msg

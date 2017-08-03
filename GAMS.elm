@@ -87,7 +87,7 @@ stmt : QOBDD -> ( List Stmt, String )
 stmt qobdd =
     let
         ( stmts, v, vs ) =
-            stmtTree (vars qobdd.vars) qobdd.root
+            stmtTree (vars qobdd.vars) qobdd.bdd
     in
     ( stmts ++ [ "%1" := v ], setVars vs )
 
@@ -101,12 +101,12 @@ setVars : List Int -> String
 setVars vars =
     let
         context v =
-            "set nodes /" ++ v ++ "/"
+            "set nodes /" ++ v ++ "/;"
     in
     context (String.concat <| List.intersperse ", " <| List.map toString vars)
 
 
-stmtTree : Dict Int String -> Tree -> ( List Stmt, Exp, List Int )
+stmtTree : Dict Int String -> BDD -> ( List Stmt, Exp, List Int )
 stmtTree vars =
     let
         term i =
@@ -123,11 +123,11 @@ stmtTree vars =
         ref i =
             ( [], Var (term i), [] )
 
-        node label i ( s1, v1, vars1 ) ( s2, v2, vars2 ) =
+        node i label ( s1, v1, vars1 ) ( s2, v2, vars2 ) =
             let
                 assignment =
                     term i := add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)
             in
             ( s1 ++ s2 ++ [ assignment ], Var (term i), i :: vars1 ++ vars2 )
     in
-    QOBDD.foldTree ( [], Num 0, [] ) ( [], Num 1, [] ) ref node
+    QOBDD.foldBDD ( [], Num 0, [] ) ( [], Num 1, [] ) ref node

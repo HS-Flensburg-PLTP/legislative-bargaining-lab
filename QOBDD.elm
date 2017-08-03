@@ -1,23 +1,24 @@
 port module QOBDD
     exposing
-        ( QOBDD
-        , Tree
+        ( BDD(..)
+          -- should not be exposed
+        , QOBDD
         , coalitions
-        , foldTree
-        , foldTreeShare
+        , foldBDD
+        , foldBDDShare
         , fullSize
         , parseMWVG
         , parsedMWVG
         , size
         )
 
-import Dict
+import Dict exposing (Dict)
 import Json.Decode as Json
 import Json.Encode
 
 
 type alias QOBDD =
-    { vars : Int, root : Tree }
+    { vars : Int, bdd : BDD }
 
 
 qobddDecoder : Json.Decoder QOBDD
@@ -29,38 +30,33 @@ qobddDecoder =
 
 size : QOBDD -> Int
 size qobdd =
-    sizeTree qobdd.root
+    sizeBDD qobdd.bdd
 
 
 fullSize : QOBDD -> Int
 fullSize qobdd =
-    fullSizeTree qobdd.root
+    fullSizeBDD qobdd.bdd
 
 
 coalitions : QOBDD -> Float
 coalitions qobdd =
-    coalitionsTree (toFloat qobdd.vars) qobdd.root
+    coalitionsBDD (toFloat qobdd.vars) qobdd.bdd
 
 
 
 -- coalitions qobdd = coalitionsTree qobdd.root
 
 
-type Tree
+type BDD
     = Zero
     | One
-    | Node { label : Int, id : Int, t : Tree, e : Tree }
+    | Node { id : Int, var : Int, thenB : BDD, elseB : BDD }
     | Ref Int
 
 
-
--- treeString : Tree -> String
--- treeString =
-
-
-foldTree : b -> b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> Tree -> b
-foldTree zero one ref node tree =
-    case tree of
+foldBDD : b -> b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> BDD -> b
+foldBDD zero one ref node bdd =
+    case bdd of
         Zero ->
             zero
 
@@ -71,22 +67,22 @@ foldTree zero one ref node tree =
             ref i
 
         Node r ->
-            node r.label r.id (foldTree zero one ref node r.t) (foldTree zero one ref node r.e)
+            node r.id r.var (foldBDD zero one ref node r.thenB) (foldBDD zero one ref node r.elseB)
 
 
-foldTreeShare : b -> b -> (Int -> b -> b -> b) -> Tree -> b
-foldTreeShare zero one node tree =
-    Tuple.second (foldTreeShareDict Dict.empty zero one node tree)
+foldBDDShare : b -> b -> (Int -> b -> b -> b) -> BDD -> b
+foldBDDShare zero one node tree =
+    Tuple.second (foldBDDShareDict zero one node tree Dict.empty)
 
 
-foldTreeShareDict :
-    Dict.Dict Int b
-    -> b
+foldBDDShareDict :
+    b
     -> b
     -> (Int -> b -> b -> b)
-    -> Tree
+    -> BDD
+    -> Dict.Dict Int b
     -> ( Dict.Dict Int b, b )
-foldTreeShareDict dict1 zero one node tree =
+foldBDDShareDict zero one node tree dict1 =
     case tree of
         Zero ->
             ( dict1, zero )
@@ -97,13 +93,13 @@ foldTreeShareDict dict1 zero one node tree =
         Node r ->
             let
                 ( dict2, res1 ) =
-                    foldTreeShareDict dict1 zero one node r.t
+                    foldBDDShareDict zero one node r.thenB dict1
 
                 ( dict3, res2 ) =
-                    foldTreeShareDict dict2 zero one node r.e
+                    foldBDDShareDict zero one node r.elseB dict2
 
                 res =
-                    node r.label res1 res2
+                    node r.var res1 res2
             in
             ( Dict.insert r.id res dict3, res )
 
@@ -116,25 +112,92 @@ foldTreeShareDict dict1 zero one node tree =
                     ( dict1, v )
 
 
-sizeTree : Tree -> Int
-sizeTree =
-    foldTree 0 0 (\_ -> 0) (\_ _ s1 s2 -> s1 + s2 + 1)
+
+-- foldBDDShareDict :
+--     b
+--     -> b
+--     -> (Int -> b -> b -> b)
+--     -> BDD
+--     -> Dict Int b
+--     -> ( Dict Int b, b )
+-- foldBDDShareDict zero one node tree =
+--     let
+--         zeroS s =
+--             ( s, zero )
+--
+--         oneS s =
+--             ( s, one )
+--     in
+--     foldBDD zeroS oneS lookup (share node) tree
+--
+-- type alias State a s =
+--     s -> ( s, a )
+--
+--
+-- return_S : a -> State a s
+-- return_S =
+--     flip (,)
+--
+--
+-- map2_S : (a -> b -> c) -> State a s -> State b s -> State c s
+-- map2_S f sx sy s =
+--     let
+--         ( s1, x ) =
+--             sx s
+--
+--         ( s2, y ) =
+--             sy s1
+--     in
+--     ( s2, f x y )
+--
+--
+-- modify_S : (s -> s) -> State a s -> State a s
+-- modify_S f sx s =
+--     let
+--         ( s2, x ) =
+--             sx s
+--     in
+--     ( f s2, x )
+--
+--
+-- lookup : Int -> State b (Dict Int b)
+-- lookup i dict =
+--     case Dict.get i dict of
+--         Nothing ->
+--             Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict)
+--
+--         Just v ->
+--             ( dict, v )
+--
+--
+-- share :
+--     (Int -> a -> a -> a)
+--     -> Int
+--     -> Int
+--     -> State a (Dict Int a)
+--     -> State a (Dict Int a)
+--     -> State a (Dict Int a)
+-- share node id v ft fe s =
+--     let
+--         ( s1, res ) =
+--             map2_S (node v) ft fe s
+--     in
+--     ( Dict.insert id res s1, res )
 
 
-fullSizeTree : Tree -> Int
-fullSizeTree =
-    foldTreeShare 0 0 (\_ s1 s2 -> s1 + s2 + 1)
+sizeBDD : BDD -> Int
+sizeBDD =
+    foldBDD 0 0 (\_ -> 0) (\_ _ s1 s2 -> s1 + s2 + 1)
 
 
+fullSizeBDD : BDD -> Int
+fullSizeBDD =
+    foldBDDShare 0 0 (\_ s1 s2 -> s1 + s2 + 1)
 
--- coalitionsTree : Tree -> Float
--- coalitionsTree tree =
---   foldTreeShare identity (\n -> 2^n) (\_ _ ft fe n -> (ft (n+1) + fe (n+1)) / 2) tree 0
 
-
-coalitionsTree : Float -> Tree -> Float
-coalitionsTree n tree =
-    foldTreeShare 0 (2 ^ n) (\_ ft fe -> (ft + fe) / 2) tree
+coalitionsBDD : Float -> BDD -> Float
+coalitionsBDD n bdd =
+    foldBDDShare 0 (2 ^ n) (\_ ft fe -> (ft + fe) / 2) bdd
 
 
 
@@ -156,7 +219,7 @@ coalitionsTree n tree =
 --          Just v -> (dict1, v)
 
 
-leaf : List Int -> Float -> Int -> Json.Decoder ( List Int, Tree )
+leaf : List Int -> Float -> Int -> Json.Decoder ( List Int, BDD )
 leaf l f v =
     if isInfinite f then
         Json.succeed
@@ -170,12 +233,12 @@ leaf l f v =
         Json.fail "no leaf"
 
 
-node : Float -> Int -> Tree -> ( List Int, Tree ) -> ( List Int, Tree )
-node label id t ( l, e ) =
-    ( id :: l, Node { label = truncate label, id = id, t = t, e = e } )
+node : Float -> Int -> BDD -> ( List Int, BDD ) -> ( List Int, BDD )
+node var id t ( l, e ) =
+    ( id :: l, Node { id = id, var = truncate var, thenB = t, elseB = e } )
 
 
-ref : List Int -> Int -> Json.Decoder ( List Int, Tree )
+ref : List Int -> Int -> Json.Decoder ( List Int, BDD )
 ref l i =
     if List.member i l then
         Json.succeed ( l, Ref i )
@@ -183,12 +246,12 @@ ref l i =
         Json.fail "no ref"
 
 
-treeDecoder : Json.Decoder Tree
+treeDecoder : Json.Decoder BDD
 treeDecoder =
     Json.map Tuple.second (treeDecoderList [])
 
 
-treeDecoderList : List Int -> Json.Decoder ( List Int, Tree )
+treeDecoderList : List Int -> Json.Decoder ( List Int, BDD )
 treeDecoderList l =
     Json.oneOf
         [ Json.andThen

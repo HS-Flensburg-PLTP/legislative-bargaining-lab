@@ -123,7 +123,7 @@ stmtTree vars =
         ref i =
             ( [], Var (term i), [] )
 
-        node i label ( s1, v1, vars1 ) ( s2, v2, vars2 ) =
+        node i ( s1, v1, vars1 ) label ( s2, v2, vars2 ) =
             let
                 assignment =
                     term i := add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)

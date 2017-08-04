@@ -4,8 +4,18 @@ import ListUtil exposing (..)
 import QOBDD exposing (..)
 
 
--- paths : Tree -> List (List Int)
--- paths t =
+henningValue : (Int -> Float) -> BDD -> Float
+henningValue p bdd =
+    let
+        node pt v pe =
+            p v * pt + (1 - p v) * pe
+    in
+    foldBDDShare 0 1 node bdd
+
+
+
+-- coalitions : Tree -> List (List Int)
+-- coalitions t =
 --     case t of
 --         Zero ->
 --             []
@@ -27,10 +37,10 @@ import QOBDD exposing (..)
 --     foldBDDShare [] [ [] ] node t
 
 
-paths : BDD -> List ( List Int, List Int )
-paths t =
+coalitions : BDD -> List ( List Int, List Int )
+coalitions t =
     let
-        node v pt pe =
+        node pt v pe =
             List.map (\( set, comp ) -> ( v :: set, comp )) pt
                 ++ List.map (\( set, comp ) -> ( set, v :: comp )) pe
     in
@@ -59,7 +69,7 @@ sumProd f g plus times zero one t =
                 (prod <| List.map f set)
                 (prod <| List.map g comp)
     in
-    sum (List.map prods (paths t))
+    sum (List.map prods (coalitions t))
 
 
 sumProd2 :
@@ -73,7 +83,7 @@ sumProd2 :
     -> a
 sumProd2 f g plus times zero one t =
     let
-        node v pt pe =
+        node pt v pe =
             plus (times (f v) pt) (times (g v) pe)
     in
     foldBDDShare zero one node t

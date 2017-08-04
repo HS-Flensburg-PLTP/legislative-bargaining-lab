@@ -29,32 +29,38 @@ qobddDecoder =
 
 
 size : QOBDD -> Int
-size qobdd =
-    sizeBDD qobdd.bdd
+size =
+    foldQOBDD 0 0 (\_ -> 0) (\_ s1 _ s2 -> s1 + s2 + 1)
 
 
 fullSize : QOBDD -> Int
-fullSize qobdd =
-    fullSizeBDD qobdd.bdd
+fullSize =
+    foldQOBDDShare 0 0 (\s1 _ s2 -> s1 + s2 + 1)
 
 
 coalitions : QOBDD -> Float
 coalitions qobdd =
-    coalitionsBDD (toFloat qobdd.vars) qobdd.bdd
+    foldQOBDDShare 0 (2 ^ toFloat qobdd.vars) (\ft _ fe -> (ft + fe) / 2) qobdd
 
 
+foldQOBDD : b -> b -> (Int -> b) -> (Int -> b -> Int -> b -> b) -> QOBDD -> b
+foldQOBDD zero one ref node qobdd =
+    foldBDD zero one ref node qobdd.bdd
 
--- coalitions qobdd = coalitionsTree qobdd.root
+
+foldQOBDDShare : b -> b -> (b -> Int -> b -> b) -> QOBDD -> b
+foldQOBDDShare zero one node qobdd =
+    foldBDDShare zero one node qobdd.bdd
 
 
 type BDD
     = Zero
     | One
-    | Node { id : Int, var : Int, thenB : BDD, elseB : BDD }
+    | Node { id : Int, thenB : BDD, var : Int, elseB : BDD }
     | Ref Int
 
 
-foldBDD : b -> b -> (Int -> b) -> (Int -> Int -> b -> b -> b) -> BDD -> b
+foldBDD : b -> b -> (Int -> b) -> (Int -> b -> Int -> b -> b) -> BDD -> b
 foldBDD zero one ref node bdd =
     case bdd of
         Zero ->
@@ -66,70 +72,121 @@ foldBDD zero one ref node bdd =
         Ref i ->
             ref i
 
-        Node r ->
-            node r.id r.var (foldBDD zero one ref node r.thenB) (foldBDD zero one ref node r.elseB)
+        Node { id, thenB, var, elseB } ->
+            node id (foldBDD zero one ref node thenB) var (foldBDD zero one ref node elseB)
 
 
-foldBDDShare : b -> b -> (Int -> b -> b -> b) -> BDD -> b
+foldBDDShare : b -> b -> (b -> Int -> b -> b) -> BDD -> b
 foldBDDShare zero one node tree =
     Tuple.second (foldBDDShareDict zero one node tree Dict.empty)
 
 
-foldBDDShareDict :
-    b
-    -> b
-    -> (Int -> b -> b -> b)
-    -> BDD
-    -> Dict.Dict Int b
-    -> ( Dict.Dict Int b, b )
-foldBDDShareDict zero one node tree dict1 =
-    case tree of
-        Zero ->
-            ( dict1, zero )
-
-        One ->
-            ( dict1, one )
-
-        Node r ->
-            let
-                ( dict2, res1 ) =
-                    foldBDDShareDict zero one node r.thenB dict1
-
-                ( dict3, res2 ) =
-                    foldBDDShareDict zero one node r.elseB dict2
-
-                res =
-                    node r.var res1 res2
-            in
-            ( Dict.insert r.id res dict3, res )
-
-        Ref i ->
-            case Dict.get i dict1 of
-                Nothing ->
-                    Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict1)
-
-                Just v ->
-                    ( dict1, v )
+error : Int -> Dict Int b -> String
+error i dict =
+    "Ref " ++ toString i ++ " missing\n" ++ toString dict
 
 
 
 -- foldBDDShareDict :
 --     b
 --     -> b
---     -> (Int -> b -> b -> b)
+--     -> (b -> Int -> b -> b)
 --     -> BDD
---     -> Dict Int b
---     -> ( Dict Int b, b )
--- foldBDDShareDict zero one node tree =
+--     -> Dict.Dict Int b
+--     -> ( Dict.Dict Int b, b )
+-- foldBDDShareDict zero one node tree dict =
+--     case tree of
+--         Zero ->
+--             ( dict, zero )
+--
+--         One ->
+--             ( dict, one )
+--
+--         Node { id, thenB, var, elseB } ->
+--             let
+--                 ( dict1, res1 ) =
+--                     foldBDDShareDict zero one node thenB dict
+--
+--                 ( dict2, res2 ) =
+--                     foldBDDShareDict zero one node elseB dict1
+--
+--                 res =
+--                     node res1 var res2
+--             in
+--             ( Dict.insert id res dict2, res )
+--
+--         Ref i ->
+--             case Dict.get i dict of
+--                 Nothing ->
+--                     Debug.crash (error i dict)
+--
+--                 Just v ->
+--                     ( dict, v )
+
+
+foldBDDShareDict :
+    b
+    -> b
+    -> (b -> Int -> b -> b)
+    -> BDD
+    -> Dict Int b
+    -> ( Dict Int b, b )
+foldBDDShareDict zero one node tree =
+    let
+        zeroS dict =
+            ( dict, zero )
+
+        oneS dict =
+            ( dict, one )
+
+        refS i dict =
+            case Dict.get i dict of
+                Nothing ->
+                    Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict)
+
+                Just v ->
+                    ( dict, v )
+
+        nodeS id thenF var elseF dict =
+            let
+                ( dict1, res1 ) =
+                    thenF dict
+
+                ( dict2, res2 ) =
+                    elseF dict1
+
+                res =
+                    node res1 var res2
+            in
+            ( Dict.insert id res dict2, res )
+    in
+    foldBDD zeroS oneS refS nodeS tree
+
+
+
+--
+-- share :
+--     (Int -> a -> a -> a)
+--     -> Int
+--     -> Int
+--     -> State a (Dict Int a)
+--     -> State a (Dict Int a)
+--     -> State a (Dict Int a)
+-- share node id v ft fe s =
 --     let
---         zeroS s =
---             ( s, zero )
---
---         oneS s =
---             ( s, one )
+--         ( s1, res ) =
+--             map2_S (node v) ft fe s
 --     in
---     foldBDD zeroS oneS lookup (share node) tree
+--     ( Dict.insert id res s1, res )
 --
+-- lookup : Int -> Dict Int b -> ( Dict Int b, b )
+-- lookup i dict =
+--     case Dict.get i dict of
+--         Nothing ->
+--             Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict)
+--
+--         Just v ->
+--             ( dict, v )
 -- type alias State a s =
 --     s -> ( s, a )
 --
@@ -160,47 +217,6 @@ foldBDDShareDict zero one node tree dict1 =
 --     ( f s2, x )
 --
 --
--- lookup : Int -> State b (Dict Int b)
--- lookup i dict =
---     case Dict.get i dict of
---         Nothing ->
---             Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict)
---
---         Just v ->
---             ( dict, v )
---
---
--- share :
---     (Int -> a -> a -> a)
---     -> Int
---     -> Int
---     -> State a (Dict Int a)
---     -> State a (Dict Int a)
---     -> State a (Dict Int a)
--- share node id v ft fe s =
---     let
---         ( s1, res ) =
---             map2_S (node v) ft fe s
---     in
---     ( Dict.insert id res s1, res )
-
-
-sizeBDD : BDD -> Int
-sizeBDD =
-    foldBDD 0 0 (\_ -> 0) (\_ _ s1 s2 -> s1 + s2 + 1)
-
-
-fullSizeBDD : BDD -> Int
-fullSizeBDD =
-    foldBDDShare 0 0 (\_ s1 s2 -> s1 + s2 + 1)
-
-
-coalitionsBDD : Float -> BDD -> Float
-coalitionsBDD n bdd =
-    foldBDDShare 0 (2 ^ n) (\_ ft fe -> (ft + fe) / 2) bdd
-
-
-
 -- sizeTree : Tree -> Int
 -- sizeTree = Tuple.second << sizeTreeDict Dict.empty
 --

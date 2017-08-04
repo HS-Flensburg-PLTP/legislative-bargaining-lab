@@ -111,8 +111,8 @@ view model =
         , viewCoalisions model
         , h2 [] [ text "Formula" ]
         , viewFormula model
-        , viewPaths model.qobdd
 
+        -- , viewCoalitions model.qobdd
         -- , h2 [] [ text "Probabilities" ]
         -- , button [ onClick Random, disabled (hasQOBDD model) ] [ text "Random Probabilities" ]
         -- , viewProbs model.probs
@@ -188,9 +188,9 @@ viewPower player prob =
     div [] [ text ("Power of player " ++ toString player ++ ": " ++ toString prob) ]
 
 
-viewPaths : Maybe QOBDD -> Html Msg
-viewPaths mqobdd =
-    text (Maybe.withDefault "no paths" (Maybe.map (toString << paths << .bdd) mqobdd))
+viewCoalitions : Maybe QOBDD -> Html Msg
+viewCoalitions mqobdd =
+    text (Maybe.withDefault "no paths" (Maybe.map (toString << coalitions << .bdd) mqobdd))
 
 
 subscriptions : Model -> Sub Msg

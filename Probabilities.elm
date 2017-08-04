@@ -31,15 +31,15 @@ prob probs qobdd =
 probTree : Dict Int Float -> BDD -> Float
 probTree probs =
     let
-        f label p1 p2 =
-            case get label probs of
+        node p1 var p2 =
+            case get var probs of
                 Nothing ->
-                    Debug.crash ("Label " ++ toString label ++ " not found in " ++ toString probs)
+                    Debug.crash ("Label " ++ toString var ++ " not found in " ++ toString probs)
 
                 Just p ->
                     p * p1 + (1 - p) * p2
     in
-    foldBDDShare 0 1 f
+    foldBDDShare 0 1 node
 
 
 diagonal : Int -> List (List Float) -> List (List Float)

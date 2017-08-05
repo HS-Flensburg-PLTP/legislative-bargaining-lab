@@ -9,7 +9,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, targetValue)
 import Json.Decode
 import Probabilities
-import QOBDD exposing (QOBDD, parseMWVG, parsedMWVG, size)
+import QOBDD exposing (BDD, QOBDD, parseMWVG, parsedMWVG, size)
 import Random exposing (Generator)
 
 
@@ -111,8 +111,9 @@ view model =
         , viewCoalisions model
         , h2 [] [ text "Formula" ]
         , viewFormula model
+        , viewResult model.qobdd vectors
 
-        -- , viewCoalitions model.qobdd
+        -- , viewResult model.qobdd coalitions
         -- , h2 [] [ text "Probabilities" ]
         -- , button [ onClick Random, disabled (hasQOBDD model) ] [ text "Random Probabilities" ]
         -- , viewProbs model.probs
@@ -188,9 +189,9 @@ viewPower player prob =
     div [] [ text ("Power of player " ++ toString player ++ ": " ++ toString prob) ]
 
 
-viewCoalitions : Maybe QOBDD -> Html Msg
-viewCoalitions mqobdd =
-    text (Maybe.withDefault "no paths" (Maybe.map (toString << coalitions << .bdd) mqobdd))
+viewResult : Maybe QOBDD -> (BDD -> a) -> Html Msg
+viewResult mqobdd f =
+    text (Maybe.withDefault "no paths" (Maybe.map (toString << f << .bdd) mqobdd))
 
 
 subscriptions : Model -> Sub Msg

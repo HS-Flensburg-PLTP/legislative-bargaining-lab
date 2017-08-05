@@ -2,15 +2,49 @@ module Coalitions exposing (..)
 
 import ListUtil exposing (..)
 import QOBDD exposing (..)
+import Vector exposing (..)
 
 
-henningValue : (Int -> Float) -> BDD -> Float
-henningValue p bdd =
+coalitions : BDD -> List ( List Int, List Int )
+coalitions t =
     let
         node pt v pe =
-            p v * pt + (1 - p v) * pe
+            List.map (\( set, comp ) -> ( v :: set, comp )) pt
+                ++ List.map (\( set, comp ) -> ( set, v :: comp )) pe
     in
-    foldBDDShare 0 1 node bdd
+    foldBDDShare [] [ ( [], [] ) ] node t
+
+
+
+-- henningValueFast : (Int -> Float) -> BDD -> Float
+-- henningValueFast p bdd =
+--     let
+--         node pt v pe =
+--             p v * pt + (1 - p v) * pe
+--     in
+--     foldBDDShare 0 1 node bdd
+
+
+type alias Semiring a =
+    { plus : a -> a -> a
+    , zero : a
+    , mult : a -> a -> a
+    , one : a
+    }
+
+
+sumProdFast : (Int -> a) -> (Int -> a) -> Semiring a -> BDD -> a
+sumProdFast f g sr t =
+    let
+        node pt v pe =
+            sr.plus (sr.mult (f v) pt) (sr.mult (g v) pe)
+    in
+    foldBDDShare sr.zero sr.one node t
+
+
+henningValueFast : (Int -> Float) -> BDD -> Float
+henningValueFast p =
+    sumProdFast p (\v -> 1 - p v) { plus = (+), zero = 0, mult = (*), one = 1 }
 
 
 
@@ -37,53 +71,26 @@ henningValue p bdd =
 --     foldBDDShare [] [ [] ] node t
 
 
-coalitions : BDD -> List ( List Int, List Int )
-coalitions t =
-    let
-        node pt v pe =
-            List.map (\( set, comp ) -> ( v :: set, comp )) pt
-                ++ List.map (\( set, comp ) -> ( set, v :: comp )) pe
-    in
-    foldBDDShare [] [ ( [], [] ) ] node t
-
-
-sumProd :
-    (Int -> a)
-    -> (Int -> a)
-    -> (a -> a -> a)
-    -> (a -> a -> a)
-    -> a
-    -> a
-    -> BDD
-    -> a
-sumProd f g plus times zero one t =
+sumProd : (Int -> a) -> (Int -> a) -> Semiring a -> BDD -> a
+sumProd f g sr t =
     let
         sum =
-            List.foldr plus zero
+            List.foldr sr.plus sr.zero
 
         prod =
-            List.foldr times one
+            List.foldr sr.mult sr.one
 
         prods ( set, comp ) =
-            times
-                (prod <| List.map f set)
-                (prod <| List.map g comp)
+            sr.mult
+                (prod (List.map f set))
+                (prod (List.map g comp))
     in
     sum (List.map prods (coalitions t))
 
 
-sumProd2 :
-    (Int -> a)
-    -> (Int -> a)
-    -> (a -> a -> a)
-    -> (a -> a -> a)
-    -> a
-    -> a
-    -> BDD
-    -> a
-sumProd2 f g plus times zero one t =
-    let
-        node pt v pe =
-            plus (times (f v) pt) (times (g v) pe)
-    in
-    foldBDDShare zero one node t
+vectors : BDD -> List Int
+vectors =
+    sumProdFast
+        (\_ -> Vector.test)
+        (\_ -> Vector.one)
+        { plus = Vector.plus, zero = Vector.zero, mult = Vector.mult, one = Vector.one }

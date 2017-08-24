@@ -9,8 +9,14 @@ type Game
     | Squares
     | Canadian95
     | Test
+    | Test2
     | HenningTest
     | BolusTest
+
+
+games : List Game
+games =
+    [ EU27, Squares, Canadian95, Test, Test2, HenningTest, BolusTest ]
 
 
 showGame : Game -> String
@@ -28,6 +34,9 @@ showGame g =
         Test ->
             "Simple Game"
 
+        Test2 ->
+            "Simple Game 2"
+
         HenningTest ->
             "Henning Simple Game"
 
@@ -38,11 +47,6 @@ showGame g =
 fromString : String -> Maybe Game
 fromString str =
     Dict.get str (Dict.fromList (List.map (\g -> ( toString g, g )) games))
-
-
-games : List Game
-games =
-    [ EU27, Squares, Canadian95, Test, HenningTest, BolusTest ]
 
 
 gameDefinition : Game -> String
@@ -59,6 +63,9 @@ gameDefinition g =
 
         Test ->
             test
+
+        Test2 ->
+            test2
 
         HenningTest ->
             henningTest
@@ -80,6 +87,14 @@ gameDecoder str =
 test =
     """3
 2
+1
+1
+"""
+
+
+test2 =
+    """3
+3
 1
 1
 """

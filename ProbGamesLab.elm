@@ -8,9 +8,11 @@ import Html exposing (..)
 import Html.Attributes exposing (..)
 import Html.Events exposing (on, onClick, onInput, targetValue)
 import Json.Decode
+import Power
 import Probabilities
 import QOBDD exposing (BDD, QOBDD, parseMWVG, parsedMWVG, size)
 import Random exposing (Generator)
+import Vector exposing (toList)
 
 
 -- split Model
@@ -109,10 +111,12 @@ view model =
             [ text model.text ]
         , viewSize model
         , viewCoalisions model
+        , viewResult model.qobdd (Power.banzhafs (List.range 0 40))
+        , viewResult model.qobdd (Power.shapleys (List.range 0 40))
         , h2 [] [ text "Formula" ]
         , viewFormula model
-        , viewResult model.qobdd vectors
 
+        -- , viewResult model.qobdd (shapley (List.range 0 2))
         -- , viewResult model.qobdd coalitions
         -- , h2 [] [ text "Probabilities" ]
         -- , button [ onClick Random, disabled (hasQOBDD model) ] [ text "Random Probabilities" ]
@@ -136,6 +140,11 @@ viewCoalisions model =
         [ text "Coalisions: "
         , text (Maybe.withDefault "number of coalisions not available" (Maybe.map (toString << QOBDD.coalitions) model.qobdd))
         ]
+
+
+
+-- viewBanzhaf : Model -> Html Msg
+-- viewBanzhaf
 
 
 viewFormula : Model -> Html Msg
@@ -191,7 +200,7 @@ viewPower player prob =
 
 viewResult : Maybe QOBDD -> (BDD -> a) -> Html Msg
 viewResult mqobdd f =
-    text (Maybe.withDefault "no paths" (Maybe.map (toString << f << .bdd) mqobdd))
+    div [] [ text (Maybe.withDefault "no result" (Maybe.map (toString << f << .bdd) mqobdd)) ]
 
 
 subscriptions : Model -> Sub Msg

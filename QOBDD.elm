@@ -131,7 +131,7 @@ foldBDDShareDict :
     -> BDD
     -> Dict Int b
     -> ( Dict Int b, b )
-foldBDDShareDict zero one node tree =
+foldBDDShareDict zero one node =
     let
         zeroS dict =
             ( dict, zero )
@@ -140,12 +140,7 @@ foldBDDShareDict zero one node tree =
             ( dict, one )
 
         refS i dict =
-            case Dict.get i dict of
-                Nothing ->
-                    Debug.crash ("Ref " ++ toString i ++ " missing\n" ++ toString dict)
-
-                Just v ->
-                    ( dict, v )
+            ( dict, unsafeGet i dict )
 
         nodeS id thenF var elseF dict =
             let
@@ -160,7 +155,17 @@ foldBDDShareDict zero one node tree =
             in
             ( Dict.insert id res dict2, res )
     in
-    foldBDD zeroS oneS refS nodeS tree
+    foldBDD zeroS oneS refS nodeS
+
+
+unsafeGet : Int -> Dict Int a -> a
+unsafeGet i dict =
+    case Dict.get i dict of
+        Nothing ->
+            Debug.crash (error i dict)
+
+        Just v ->
+            v
 
 
 

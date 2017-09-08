@@ -1,13 +1,13 @@
 module Power exposing (..)
 
-import Iteration exposing (sumProdFast)
+import Iteration exposing (sumProd)
 import QOBDD exposing (..)
 import Utils exposing (fac)
 import Vector exposing (Vector)
 
 
--- henningIndexFast : (Int -> Float) -> BDD -> Float
--- henningIndexFast p bdd =
+-- henningIndex : (Int -> Float) -> BDD -> Float
+-- henningIndex p bdd =
 --     let
 --         node pt v pe =
 --             p v * pt + (1 - p v) * pe
@@ -15,19 +15,19 @@ import Vector exposing (Vector)
 --     foldBDDShare 0 1 node bdd
 
 
-henningIndexFast : (Int -> Float) -> BDD -> Float
-henningIndexFast p =
-    sumProdFast p (\v -> 1 - p v) { plus = (+), zero = 0, mult = (*), one = 1 }
+henningIndex : (Int -> Float) -> BDD -> Float
+henningIndex p =
+    sumProd p (\v -> 1 - p v) { plus = (+), zero = 0, mult = (*), one = 1 }
 
 
 with : Int -> BDD -> Int
 with i =
-    sumProdFast (always 1) (isPlayer i 0 1) { plus = (+), zero = 0, mult = (*), one = 1 }
+    sumProd (always 1) (isPlayer i 0 1) { plus = (+), zero = 0, mult = (*), one = 1 }
 
 
 without : Int -> BDD -> Int
 without i =
-    sumProdFast (isPlayer i 0 1) (always 1) { plus = (+), zero = 0, mult = (*), one = 1 }
+    sumProd (isPlayer i 0 1) (always 1) { plus = (+), zero = 0, mult = (*), one = 1 }
 
 
 isPlayer : Int -> a -> a -> Int -> a
@@ -52,7 +52,7 @@ allSwings players bdd =
 -}
 banzhaf : Int -> Int -> BDD -> Float
 banzhaf player n bdd =
-    toFloat (swings player bdd)
+    toFloat (swings player bdd) / 2 ^ toFloat n - 1
 
 
 {-| The relative Banzhaf index for a list of players
@@ -71,7 +71,7 @@ banzhafs players bdd =
 
 withV : Int -> BDD -> Vector Int
 withV i =
-    sumProdFast
+    sumProd
         (always (Vector.extend Vector.one))
         (isPlayer i Vector.zero Vector.one)
         { plus = Vector.plus, zero = Vector.zero, mult = Vector.mult, one = Vector.one }
@@ -79,7 +79,7 @@ withV i =
 
 withoutV : Int -> BDD -> Vector Int
 withoutV i =
-    sumProdFast
+    sumProd
         (isPlayer i Vector.zero (Vector.extend Vector.one))
         (always Vector.one)
         { plus = Vector.plus, zero = Vector.zero, mult = Vector.mult, one = Vector.one }

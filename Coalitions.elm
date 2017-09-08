@@ -4,23 +4,24 @@ module Coalitions
         , winning
         )
 
+import List exposing (map)
 import QOBDD exposing (..)
+import Tuple exposing (mapFirst, mapSecond)
 
 
 winning : BDD -> List (List Int)
-winning t =
+winning bdd =
     let
         node pt v pe =
-            List.map ((::) v) pt
+            map ((::) v) pt ++ pe
     in
-    foldBDDShare [] [ [] ] node t
+    foldBDDShare [] [ [] ] node bdd
 
 
 all : BDD -> List ( List Int, List Int )
-all t =
+all bdd =
     let
         node pt v pe =
-            List.map (\( set, comp ) -> ( v :: set, comp )) pt
-                ++ List.map (\( set, comp ) -> ( set, v :: comp )) pe
+            map (mapFirst ((::) v)) pt ++ map (mapSecond ((::) v)) pe
     in
-    foldBDDShare [] [ ( [], [] ) ] node t
+    foldBDDShare [] [ ( [], [] ) ] node bdd

@@ -6,6 +6,7 @@ import Json.Decode as Json
 
 type Game
     = EU27
+    | EU28
     | Squares
     | Canadian95
     | Test
@@ -16,7 +17,7 @@ type Game
 
 games : List Game
 games =
-    [ EU27, Squares, Canadian95, Test, Test2, HenningTest, BolusTest ]
+    [ EU27, EU28, Squares, Canadian95, Test, Test2, HenningTest, BolusTest ]
 
 
 showGame : Game -> String
@@ -24,6 +25,9 @@ showGame g =
     case g of
         EU27 ->
             "EU-27"
+
+        EU28 ->
+            "EU-28"
 
         Squares ->
             "Magic Squares"
@@ -54,6 +58,9 @@ gameDefinition g =
     case g of
         EU27 ->
             eu27
+
+        EU28 ->
+            eu28
 
         Squares ->
             magicSquares
@@ -214,3 +221,55 @@ eu27 =
 0 0 0 40 ENF
 0 0 0 18 Non Inscrits
 """
+
+
+eu28 =
+    """## Council
+# see http://www.consilium.europa.eu/en/council-eu/voting-system/qualified-majority/
+# and voting calculator for pop shares
+# missing: The blocking minority must include at least four Council members representing more than 35% of the EU population.
+# https://www.lexology.com/library/detail.aspx?g=232a482a-c56b-48da-936d-413c583391fe
+# http://www.cms-lawnow.com/~/media/Files/RegZone/TrainingSeminarsPDFs/QMV%20report%20German%20EU%20Foundation%20Series.pdf#page=2
+## Parliament
+# for parliament seat shares see: https://en.wikipedia.org/wiki/Political_groups_of_the_European_Parliament#Current_composition_of_the_8th_European_Parliament
+# vacant seats not included
+%join ((1 AND 2) AND 3)
+%type binary
+16 6500 374
+1 1606 0 Germany
+1 1305 0 France
+1 1279 0 United Kingdom
+1 1200 0 Italy
+1 909 0 Spain
+1 743 0 Poland
+1 387 0 Romania
+1 337 0 Netherlands
+1 221 0 Belgium
+1 211 0 Greece
+1 204 0 Czech Republic
+1 202 0 Portugal
+1 196 0 Sweden
+1 192 0 Hungary
+1 171 0 Austria
+1 140 0 Bulgaria
+1 112 0 Denmark
+1 107 0 Finland
+1 106 0 Slovakia
+1 91 0 Ireland
+1 82 0 Croatia
+1 57 0 Lithuania
+1 40 0 Slovenia
+1 39 0 Latvia
+1 26 0 Estonia
+1 17 0 Cyprus
+1 11 0 Luxembourg
+1 9 0 Malta
+0 0 214 European People's Party (EPP)
+0 0 189 Progressive Alliance of Socialists and Democrats (S&D)
+0 0 73 European Conservatives and Reformists (ECR)
+0 0 68 Alliance of Liberals and Democrats for Europe (ALDE)
+0 0 52 European United Left–Nordic Green Left (GUE-NGL)
+0 0 51 The Greens–European Free Alliance (Greens–EFA)
+0 0 41 Europe of Freedom and Direct Democracy (EFDD)
+0 0 40 Europe of Nations and Freedom (ENL)
+0 0 18 Non-Inscrits (NI)"""

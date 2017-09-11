@@ -1,9 +1,10 @@
 module Power exposing (..)
 
 import Iteration exposing (sumProd)
+import List exposing (indexedMap, length, map, sum)
 import QOBDD exposing (..)
 import Utils exposing (fac)
-import Vector exposing (Vector)
+import Vector exposing (Vector, extend, minus, mult, one, plus, zero)
 
 
 -- henningIndex : (Int -> Float) -> BDD -> Float
@@ -45,7 +46,7 @@ swings i bdd =
 
 allSwings : List Int -> BDD -> List Int
 allSwings players bdd =
-    List.map (\i -> swings i bdd) players
+    map (\i -> swings i bdd) players
 
 
 {-| The absolute Banzhaf index for a specific player
@@ -61,38 +62,38 @@ banzhafs : List Int -> BDD -> List Float
 banzhafs players bdd =
     let
         sws =
-            List.map (\i -> toFloat (swings i bdd)) players
+            map (\i -> toFloat (swings i bdd)) players
 
         total =
-            List.sum sws
+            sum sws
     in
-    List.map (\s -> s / total) sws
+    map (\s -> s / total) sws
 
 
 withV : Int -> BDD -> Vector Int
 withV i =
     sumProd
-        (always (Vector.extend Vector.one))
-        (isPlayer i Vector.zero Vector.one)
-        { plus = Vector.plus, zero = Vector.zero, mult = Vector.mult, one = Vector.one }
+        (always (extend one))
+        (isPlayer i zero one)
+        { plus = plus, zero = zero, mult = mult, one = one }
 
 
 withoutV : Int -> BDD -> Vector Int
 withoutV i =
     sumProd
-        (isPlayer i Vector.zero (Vector.extend Vector.one))
-        (always Vector.one)
-        { plus = Vector.plus, zero = Vector.zero, mult = Vector.mult, one = Vector.one }
+        (isPlayer i zero (extend one))
+        (always one)
+        { plus = plus, zero = zero, mult = mult, one = one }
 
 
 swingsV : Int -> BDD -> Vector Int
 swingsV i bdd =
-    Vector.minus (withV i bdd) (Vector.extend (withoutV i bdd))
+    minus (withV i bdd) (extend (withoutV i bdd))
 
 
 allSwingsV : List Int -> BDD -> List (List Int)
 allSwingsV players bdd =
-    List.map (\i -> Vector.toList (swingsV i bdd)) players
+    map (\i -> swingsV i bdd) players
 
 
 {-| The absolute Shapley-Shubik index for a specific player
@@ -100,13 +101,13 @@ allSwingsV players bdd =
 shapley : Int -> Int -> BDD -> Float
 shapley player n bdd =
     let
-        si =
-            Vector.toList (swingsV player bdd)
+        v =
+            swingsV player bdd
 
-        sum =
-            List.sum (List.indexedMap (\k s -> fac (k - 1) * fac (n - k) * s) si)
+        s =
+            sum (indexedMap (\k s -> fac (k - 1) * fac (n - k) * s) v)
     in
-    toFloat sum / toFloat (fac n)
+    toFloat s / toFloat (fac n)
 
 
 {-| The relative Shapley-Shubik index for a list of players
@@ -115,12 +116,12 @@ shapleys : List Int -> BDD -> List Float
 shapleys players bdd =
     let
         n =
-            List.length players
+            length players
 
         values =
-            List.map (\i -> shapley i n bdd) players
+            map (\i -> shapley i n bdd) players
 
         total =
-            List.sum values
+            sum values
     in
-    List.map (\v -> v / total) values
+    map (\v -> v / total) values

@@ -11,6 +11,8 @@ module Vector
         , zero
         )
 
+import List exposing (map)
+
 
 toList : Vector a -> List a
 toList =
@@ -39,22 +41,26 @@ map2 f v1 v2 =
             f a1 a2 :: map2 f v12 v22
 
 
-zero : Vector Int
+type alias Nat =
+    Int
+
+
+zero : Vector Nat
 zero =
     []
 
 
-plus : Vector Int -> Vector Int -> Vector Int
+plus : Vector Nat -> Vector Nat -> Vector Nat
 plus =
     map2 (+)
 
 
-one : Vector Int
+one : Vector Nat
 one =
     [ 1 ]
 
 
-mult : Vector Int -> Vector Int -> Vector Int
+mult : Vector Nat -> Vector Nat -> Vector Nat
 mult v1 v2 =
     case ( v1, v2 ) of
         ( [], _ ) ->
@@ -64,14 +70,14 @@ mult v1 v2 =
             []
 
         ( n :: v12, _ ) ->
-            plus (List.map ((*) n) v2) (0 :: mult v12 v2)
+            plus (map ((*) n) v2) (0 :: mult v12 v2)
 
 
-extend : Vector Int -> Vector Int
+extend : Vector Nat -> Vector Nat
 extend v =
     0 :: v
 
 
-minus : Vector Int -> Vector Int -> Vector Int
+minus : Vector Nat -> Vector Nat -> Vector Nat
 minus =
     map2 (-)

@@ -43,24 +43,32 @@ coalitions qobdd =
     foldQOBDDShare 0 (2 ^ toFloat qobdd.vars) (\ft _ fe -> (ft + fe) / 2) qobdd
 
 
-foldQOBDD : b -> b -> (Int -> b) -> (Int -> b -> Int -> b -> b) -> QOBDD -> b
+foldQOBDD : b -> b -> (Int -> b) -> (Int -> b -> Variable -> b -> b) -> QOBDD -> b
 foldQOBDD zero one ref node qobdd =
     foldBDD zero one ref node qobdd.bdd
 
 
-foldQOBDDShare : b -> b -> (b -> Int -> b -> b) -> QOBDD -> b
+foldQOBDDShare : b -> b -> (b -> Variable -> b -> b) -> QOBDD -> b
 foldQOBDDShare zero one node qobdd =
     foldBDDShare zero one node qobdd.bdd
+
+
+type alias Variable =
+    Int
+
+
+type alias Id =
+    Int
 
 
 type BDD
     = Zero
     | One
-    | Node { id : Int, thenB : BDD, var : Int, elseB : BDD }
-    | Ref Int
+    | Node { id : Id, thenB : BDD, var : Variable, elseB : BDD }
+    | Ref Id
 
 
-foldBDD : b -> b -> (Int -> b) -> (Int -> b -> Int -> b -> b) -> BDD -> b
+foldBDD : b -> b -> (Id -> b) -> (Id -> b -> Variable -> b -> b) -> BDD -> b
 foldBDD zero one ref node bdd =
     case bdd of
         Zero ->
@@ -76,12 +84,12 @@ foldBDD zero one ref node bdd =
             node id (foldBDD zero one ref node thenB) var (foldBDD zero one ref node elseB)
 
 
-foldBDDShare : b -> b -> (b -> Int -> b -> b) -> BDD -> b
+foldBDDShare : b -> b -> (b -> Variable -> b -> b) -> BDD -> b
 foldBDDShare zero one node tree =
     Tuple.second (foldBDDShareDict zero one node tree Dict.empty)
 
 
-error : Int -> Dict Int b -> String
+error : Int -> Dict Id b -> String
 error i dict =
     "Ref " ++ toString i ++ " missing\n" ++ toString dict
 
@@ -127,10 +135,10 @@ error i dict =
 foldBDDShareDict :
     b
     -> b
-    -> (b -> Int -> b -> b)
+    -> (b -> Variable -> b -> b)
     -> BDD
-    -> Dict Int b
-    -> ( Dict Int b, b )
+    -> Dict Id b
+    -> ( Dict Id b, b )
 foldBDDShareDict zero one node =
     let
         zeroS dict =
@@ -158,7 +166,7 @@ foldBDDShareDict zero one node =
     foldBDD zeroS oneS refS nodeS
 
 
-unsafeGet : Int -> Dict Int a -> a
+unsafeGet : Id -> Dict Id a -> a
 unsafeGet i dict =
     case Dict.get i dict of
         Nothing ->

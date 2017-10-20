@@ -1,4 +1,4 @@
-module ProbGamesLab exposing (..)
+module BargainLab exposing (..)
 
 import Coalitions exposing (..)
 import Dict
@@ -111,19 +111,13 @@ view model =
             [ text model.text ]
         , viewSize model
         , viewCoalisions model
-
-        -- , viewResult model.qobdd Coalitions.winning
-        -- , viewResult model.qobdd (Power.banzhafs (List.range 0 40))
-        -- , viewResult model.qobdd (Power.shapleys (List.range 0 40))
-        -- , h2 [] [ text "Formula" ]
-        -- , viewFormula model
-        -- , viewResult model.qobdd (shapley (List.range 0 2))
-        -- , viewResult model.qobdd coalitions
-        -- , h2 [] [ text "Probabilities" ]
-        -- , button [ onClick Random, disabled (hasQOBDD model) ] [ text "Random Probabilities" ]
-        -- , viewProbs model.probs
-        -- , h2 [] [ text "Powers" ]
-        -- , viewPowerList model
+        , h2 [] [ text "GAMS Code" ]
+        , p []
+            [ text "The following code can be used in "
+            , a [ href "https://www.gams.com" ] [ text "GAMS" ]
+            , text " to calculate the probability of a proposal to be accepted."
+            ]
+        , viewFormula model
         ]
 
 

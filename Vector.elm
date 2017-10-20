@@ -28,8 +28,8 @@ type alias Vector a =
     List a
 
 
-map2 : (a -> a -> a) -> Vector a -> Vector a -> Vector a
-map2 f v1 v2 =
+alignWith : (a -> a -> a) -> Vector a -> Vector a -> Vector a
+alignWith f v1 v2 =
     case ( v1, v2 ) of
         ( [], _ ) ->
             v2
@@ -38,7 +38,7 @@ map2 f v1 v2 =
             v1
 
         ( a1 :: v12, a2 :: v22 ) ->
-            f a1 a2 :: map2 f v12 v22
+            f a1 a2 :: alignWith f v12 v22
 
 
 type alias Nat =
@@ -52,7 +52,7 @@ zero =
 
 plus : Vector Nat -> Vector Nat -> Vector Nat
 plus =
-    map2 (+)
+    alignWith (+)
 
 
 one : Vector Nat
@@ -80,4 +80,4 @@ extend v =
 
 minus : Vector Nat -> Vector Nat -> Vector Nat
 minus =
-    map2 (-)
+    alignWith (-)

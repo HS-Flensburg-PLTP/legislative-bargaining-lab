@@ -111,12 +111,12 @@ view model =
             [ text model.text ]
         , viewSize model
         , viewCoalisions model
-        , viewResult model.qobdd Coalitions.winning
-        , viewResult model.qobdd (Power.banzhafs (List.range 0 40))
-        , viewResult model.qobdd (Power.shapleys (List.range 0 40))
-        , h2 [] [ text "Formula" ]
-        , viewFormula model
 
+        -- , viewResult model.qobdd Coalitions.winning
+        -- , viewResult model.qobdd (Power.banzhafs (List.range 0 40))
+        -- , viewResult model.qobdd (Power.shapleys (List.range 0 40))
+        -- , h2 [] [ text "Formula" ]
+        -- , viewFormula model
         -- , viewResult model.qobdd (shapley (List.range 0 2))
         -- , viewResult model.qobdd coalitions
         -- , h2 [] [ text "Probabilities" ]

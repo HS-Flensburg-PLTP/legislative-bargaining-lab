@@ -9051,122 +9051,132 @@ var _elm_lang$html$Html_Events$Options = F2(
 		return {stopPropagation: a, preventDefault: b};
 	});
 
-var _user$project$QOBDD$foldTreeShareDict = F5(
-	function (dict1, zero, one, node, tree) {
-		var _p0 = tree;
-		switch (_p0.ctor) {
-			case 'Zero':
-				return {ctor: '_Tuple2', _0: dict1, _1: zero};
-			case 'One':
-				return {ctor: '_Tuple2', _0: dict1, _1: one};
-			case 'Node':
-				var _p3 = _p0._0;
-				var _p1 = A5(_user$project$QOBDD$foldTreeShareDict, dict1, zero, one, node, _p3.t);
-				var dict2 = _p1._0;
-				var res1 = _p1._1;
-				var _p2 = A5(_user$project$QOBDD$foldTreeShareDict, dict2, zero, one, node, _p3.e);
-				var dict3 = _p2._0;
-				var res2 = _p2._1;
-				var res = A3(node, _p3.label, res1, res2);
-				return {
-					ctor: '_Tuple2',
-					_0: A3(_elm_lang$core$Dict$insert, _p3.id, res, dict3),
-					_1: res
-				};
-			default:
-				var _p6 = _p0._0;
-				var _p4 = A2(_elm_lang$core$Dict$get, _p6, dict1);
-				if (_p4.ctor === 'Nothing') {
-					return _elm_lang$core$Native_Utils.crashCase(
-						'QOBDD',
-						{
-							start: {line: 111, column: 13},
-							end: {line: 116, column: 33}
-						},
-						_p4)(
-						A2(
-							_elm_lang$core$Basics_ops['++'],
-							'Ref ',
-							A2(
-								_elm_lang$core$Basics_ops['++'],
-								_elm_lang$core$Basics$toString(_p6),
-								A2(
-									_elm_lang$core$Basics_ops['++'],
-									' missing\n',
-									_elm_lang$core$Basics$toString(dict1)))));
-				} else {
-					return {ctor: '_Tuple2', _0: dict1, _1: _p4._0};
-				}
+var _user$project$QOBDD$error = F2(
+	function (i, dict) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			'Ref ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_elm_lang$core$Basics$toString(i),
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					' missing\n',
+					_elm_lang$core$Basics$toString(dict))));
+	});
+var _user$project$QOBDD$unsafeGet = F2(
+	function (i, dict) {
+		var _p0 = A2(_elm_lang$core$Dict$get, i, dict);
+		if (_p0.ctor === 'Nothing') {
+			return _elm_lang$core$Native_Utils.crashCase(
+				'QOBDD',
+				{
+					start: {line: 171, column: 5},
+					end: {line: 176, column: 14}
+				},
+				_p0)(
+				A2(_user$project$QOBDD$error, i, dict));
+		} else {
+			return _p0._0;
 		}
 	});
-var _user$project$QOBDD$foldTreeShare = F4(
-	function (zero, one, node, tree) {
-		return _elm_lang$core$Tuple$second(
-			A5(_user$project$QOBDD$foldTreeShareDict, _elm_lang$core$Dict$empty, zero, one, node, tree));
-	});
-var _user$project$QOBDD$fullSizeTree = A3(
-	_user$project$QOBDD$foldTreeShare,
-	0,
-	0,
-	F3(
-		function (_p7, s1, s2) {
-			return (s1 + s2) + 1;
-		}));
-var _user$project$QOBDD$coalitionsTree = F2(
-	function (n, tree) {
-		return A4(
-			_user$project$QOBDD$foldTreeShare,
-			0,
-			Math.pow(2, n),
-			F3(
-				function (_p8, ft, fe) {
-					return (ft + fe) / 2;
-				}),
-			tree);
-	});
-var _user$project$QOBDD$foldTree = F5(
-	function (zero, one, ref, node, tree) {
-		var _p9 = tree;
-		switch (_p9.ctor) {
+var _user$project$QOBDD$foldBDD = F5(
+	function (zero, one, ref, node, bdd) {
+		var _p2 = bdd;
+		switch (_p2.ctor) {
 			case 'Zero':
 				return zero;
 			case 'One':
 				return one;
 			case 'Ref':
-				return ref(_p9._0);
+				return ref(_p2._0);
 			default:
-				var _p10 = _p9._0;
 				return A4(
 					node,
-					_p10.label,
-					_p10.id,
-					A5(_user$project$QOBDD$foldTree, zero, one, ref, node, _p10.t),
-					A5(_user$project$QOBDD$foldTree, zero, one, ref, node, _p10.e));
+					_p2._0.id,
+					A5(_user$project$QOBDD$foldBDD, zero, one, ref, node, _p2._0.thenB),
+					_p2._0.$var,
+					A5(_user$project$QOBDD$foldBDD, zero, one, ref, node, _p2._0.elseB));
 		}
 	});
-var _user$project$QOBDD$sizeTree = A4(
-	_user$project$QOBDD$foldTree,
+var _user$project$QOBDD$foldBDDShareDict = F3(
+	function (zero, one, node) {
+		var nodeS = F5(
+			function (id, thenF, $var, elseF, dict) {
+				var _p3 = thenF(dict);
+				var dict1 = _p3._0;
+				var res1 = _p3._1;
+				var _p4 = elseF(dict1);
+				var dict2 = _p4._0;
+				var res2 = _p4._1;
+				var res = A3(node, res1, $var, res2);
+				return {
+					ctor: '_Tuple2',
+					_0: A3(_elm_lang$core$Dict$insert, id, res, dict2),
+					_1: res
+				};
+			});
+		var refS = F2(
+			function (i, dict) {
+				return {
+					ctor: '_Tuple2',
+					_0: dict,
+					_1: A2(_user$project$QOBDD$unsafeGet, i, dict)
+				};
+			});
+		var oneS = function (dict) {
+			return {ctor: '_Tuple2', _0: dict, _1: one};
+		};
+		var zeroS = function (dict) {
+			return {ctor: '_Tuple2', _0: dict, _1: zero};
+		};
+		return A4(_user$project$QOBDD$foldBDD, zeroS, oneS, refS, nodeS);
+	});
+var _user$project$QOBDD$foldBDDShare = F4(
+	function (zero, one, node, tree) {
+		return _elm_lang$core$Tuple$second(
+			A5(_user$project$QOBDD$foldBDDShareDict, zero, one, node, tree, _elm_lang$core$Dict$empty));
+	});
+var _user$project$QOBDD$foldQOBDDShare = F4(
+	function (zero, one, node, qobdd) {
+		return A4(_user$project$QOBDD$foldBDDShare, zero, one, node, qobdd.bdd);
+	});
+var _user$project$QOBDD$foldQOBDD = F5(
+	function (zero, one, ref, node, qobdd) {
+		return A5(_user$project$QOBDD$foldBDD, zero, one, ref, node, qobdd.bdd);
+	});
+var _user$project$QOBDD$coalitions = function (qobdd) {
+	return A4(
+		_user$project$QOBDD$foldQOBDDShare,
+		0,
+		Math.pow(
+			2,
+			_elm_lang$core$Basics$toFloat(qobdd.vars)),
+		F3(
+			function (ft, _p5, fe) {
+				return (ft + fe) / 2;
+			}),
+		qobdd);
+};
+var _user$project$QOBDD$fullSize = A3(
+	_user$project$QOBDD$foldQOBDDShare,
 	0,
 	0,
-	function (_p11) {
+	F3(
+		function (s1, _p6, s2) {
+			return (s1 + s2) + 1;
+		}));
+var _user$project$QOBDD$size = A4(
+	_user$project$QOBDD$foldQOBDD,
+	0,
+	0,
+	function (_p7) {
 		return 0;
 	},
 	F4(
-		function (_p13, _p12, s1, s2) {
+		function (_p9, s1, _p8, s2) {
 			return (s1 + s2) + 1;
 		}));
-var _user$project$QOBDD$coalitions = function (qobdd) {
-	return A2(
-		_user$project$QOBDD$coalitionsTree,
-		_elm_lang$core$Basics$toFloat(qobdd.vars),
-		qobdd.root);
-};
-var _user$project$QOBDD$fullSize = function (qobdd) {
-	return _user$project$QOBDD$fullSizeTree(qobdd.root);
-};
-var _user$project$QOBDD$size = function (qobdd) {
-	return _user$project$QOBDD$sizeTree(qobdd.root);
-};
 var _user$project$QOBDD$parseMWVG = _elm_lang$core$Native_Platform.outgoingPort(
 	'parseMWVG',
 	function (v) {
@@ -9175,7 +9185,7 @@ var _user$project$QOBDD$parseMWVG = _elm_lang$core$Native_Platform.outgoingPort(
 var _user$project$QOBDD$parsedMWVGJson = _elm_lang$core$Native_Platform.incomingPort('parsedMWVGJson', _elm_lang$core$Json_Decode$value);
 var _user$project$QOBDD$QOBDD = F2(
 	function (a, b) {
-		return {vars: a, root: b};
+		return {vars: a, bdd: b};
 	});
 var _user$project$QOBDD$Ref = function (a) {
 	return {ctor: 'Ref', _0: a};
@@ -9193,17 +9203,17 @@ var _user$project$QOBDD$Node = function (a) {
 	return {ctor: 'Node', _0: a};
 };
 var _user$project$QOBDD$node = F4(
-	function (label, id, t, _p14) {
-		var _p15 = _p14;
+	function ($var, id, t, _p10) {
+		var _p11 = _p10;
 		return {
 			ctor: '_Tuple2',
-			_0: {ctor: '::', _0: id, _1: _p15._0},
+			_0: {ctor: '::', _0: id, _1: _p11._0},
 			_1: _user$project$QOBDD$Node(
 				{
-					label: _elm_lang$core$Basics$truncate(label),
 					id: id,
-					t: t,
-					e: _p15._1
+					$var: _elm_lang$core$Basics$truncate($var),
+					thenB: t,
+					elseB: _p11._1
 				})
 		};
 	});
@@ -9249,24 +9259,24 @@ var _user$project$QOBDD$treeDecoderList = function (l) {
 								function (id) {
 									return A2(
 										_elm_lang$core$Json_Decode$andThen,
-										function (_p16) {
-											var _p17 = _p16;
+										function (_p12) {
+											var _p13 = _p12;
 											return A2(
 												_elm_lang$core$Json_Decode$map,
-												A3(_user$project$QOBDD$node, label, id, _p17._1),
+												A3(_user$project$QOBDD$node, label, id, _p13._1),
 												A2(
 													_elm_lang$core$Json_Decode$field,
 													'e',
 													_elm_lang$core$Json_Decode$lazy(
-														function (_p18) {
-															return _user$project$QOBDD$treeDecoderList(_p17._0);
+														function (_p14) {
+															return _user$project$QOBDD$treeDecoderList(_p13._0);
 														})));
 										},
 										A2(
 											_elm_lang$core$Json_Decode$field,
 											't',
 											_elm_lang$core$Json_Decode$lazy(
-												function (_p19) {
+												function (_p15) {
 													return _user$project$QOBDD$treeDecoderList(l);
 												})));
 								},
@@ -9291,19 +9301,82 @@ var _user$project$QOBDD$qobddDecoder = A3(
 var _user$project$QOBDD$parsedMWVG = function (f) {
 	return _user$project$QOBDD$parsedMWVGJson(
 		function (v) {
-			var _p20 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$QOBDD$qobddDecoder, v);
-			if (_p20.ctor === 'Ok') {
-				return f(_p20._0);
+			var _p16 = A2(_elm_lang$core$Json_Decode$decodeValue, _user$project$QOBDD$qobddDecoder, v);
+			if (_p16.ctor === 'Ok') {
+				return f(_p16._0);
 			} else {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'QOBDD',
 					{
-						start: {line: 227, column: 13},
-						end: {line: 232, column: 46}
+						start: {line: 319, column: 13},
+						end: {line: 324, column: 46}
 					},
-					_p20)('Parse error');
+					_p16)('Parse error');
 			}
 		});
+};
+
+var _user$project$Coalitions$all = function (bdd) {
+	var node = F3(
+		function (pt, v, pe) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Tuple$mapFirst(
+						F2(
+							function (x, y) {
+								return {ctor: '::', _0: x, _1: y};
+							})(v)),
+					pt),
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$core$Tuple$mapSecond(
+						F2(
+							function (x, y) {
+								return {ctor: '::', _0: x, _1: y};
+							})(v)),
+					pe));
+		});
+	return A4(
+		_user$project$QOBDD$foldBDDShare,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: {ctor: '[]'},
+				_1: {ctor: '[]'}
+			},
+			_1: {ctor: '[]'}
+		},
+		node,
+		bdd);
+};
+var _user$project$Coalitions$winning = function (bdd) {
+	var node = F3(
+		function (pt, v, pe) {
+			return A2(
+				_elm_lang$core$Basics_ops['++'],
+				A2(
+					_elm_lang$core$List$map,
+					F2(
+						function (x, y) {
+							return {ctor: '::', _0: x, _1: y};
+						})(v),
+					pt),
+				pe);
+		});
+	return A4(
+		_user$project$QOBDD$foldBDDShare,
+		{ctor: '[]'},
+		{
+			ctor: '::',
+			_0: {ctor: '[]'},
+			_1: {ctor: '[]'}
+		},
+		node,
+		bdd);
 };
 
 var _user$project$GAMS$setVars = function (vars) {
@@ -9311,7 +9384,7 @@ var _user$project$GAMS$setVars = function (vars) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			'set nodes /',
-			A2(_elm_lang$core$Basics_ops['++'], v, '/'));
+			A2(_elm_lang$core$Basics_ops['++'], v, '/;'));
 	};
 	return context(
 		_elm_lang$core$String$concat(
@@ -9465,7 +9538,7 @@ var _user$project$GAMS$stmtTree = function (vars) {
 		};
 	};
 	var node = F4(
-		function (label, i, _p6, _p5) {
+		function (i, _p6, label, _p5) {
 			var _p7 = _p6;
 			var _p8 = _p5;
 			var assignment = A2(
@@ -9509,7 +9582,7 @@ var _user$project$GAMS$stmtTree = function (vars) {
 			};
 		});
 	return A4(
-		_user$project$QOBDD$foldTree,
+		_user$project$QOBDD$foldBDD,
 		{
 			ctor: '_Tuple3',
 			_0: {ctor: '[]'},
@@ -9529,7 +9602,7 @@ var _user$project$GAMS$stmt = function (qobdd) {
 	var _p9 = A2(
 		_user$project$GAMS$stmtTree,
 		_user$project$GAMS$vars(qobdd.vars),
-		qobdd.root);
+		qobdd.bdd);
 	var stmts = _p9._0;
 	var v = _p9._1;
 	var vs = _p9._2;
@@ -9547,24 +9620,33 @@ var _user$project$GAMS$stmt = function (qobdd) {
 	};
 };
 
+var _user$project$Games$eu28 = '## Council\n# see http://www.consilium.europa.eu/en/council-eu/voting-system/qualified-majority/\n# and voting calculator for pop shares\n# missing: The blocking minority must include at least four Council members representing more than 35% of the EU population.\n# https://www.lexology.com/library/detail.aspx?g=232a482a-c56b-48da-936d-413c583391fe\n# http://www.cms-lawnow.com/~/media/Files/RegZone/TrainingSeminarsPDFs/QMV%20report%20German%20EU%20Foundation%20Series.pdf#page=2\n## Parliament\n# for parliament seat shares see: https://en.wikipedia.org/wiki/Political_groups_of_the_European_Parliament#Current_composition_of_the_8th_European_Parliament\n# vacant seats not included\n%join ((1 AND 2) AND 3)\n%type binary\n16 6500 374\n1 1606 0 Germany\n1 1305 0 France\n1 1279 0 United Kingdom\n1 1200 0 Italy\n1 909 0 Spain\n1 743 0 Poland\n1 387 0 Romania\n1 337 0 Netherlands\n1 221 0 Belgium\n1 211 0 Greece\n1 204 0 Czech Republic\n1 202 0 Portugal\n1 196 0 Sweden\n1 192 0 Hungary\n1 171 0 Austria\n1 140 0 Bulgaria\n1 112 0 Denmark\n1 107 0 Finland\n1 106 0 Slovakia\n1 91 0 Ireland\n1 82 0 Croatia\n1 57 0 Lithuania\n1 40 0 Slovenia\n1 39 0 Latvia\n1 26 0 Estonia\n1 17 0 Cyprus\n1 11 0 Luxembourg\n1 9 0 Malta\n0 0 214 European People\'s Party (EPP)\n0 0 189 Progressive Alliance of Socialists and Democrats (S&D)\n0 0 73 European Conservatives and Reformists (ECR)\n0 0 68 Alliance of Liberals and Democrats for Europe (ALDE)\n0 0 52 European United Left–Nordic Green Left (GUE-NGL)\n0 0 51 The Greens–European Free Alliance (Greens–EFA)\n0 0 41 Europe of Freedom and Direct Democracy (EFDD)\n0 0 40 Europe of Nations and Freedom (ENL)\n0 0 18 Non-Inscrits (NI)';
 var _user$project$Games$eu27 = '# Council of Ministers of the European Union\n# (Treaty of Lisbon)\n#\n# See: http://en.wikipedia.org/wiki/Treaty_of_Lisbon\n# (Number of Votes AND Population) OR (Blocking Miniority)\n%join ((1 AND 2) OR 3) AND 4\n%type binary\n# 55% and 65% or at least at most four not supporting it\n15 32400 24 376\n1 8200 1 0 Germany\n1 6400 1 0 France\n1 6200 1 0 United\n1 6000 1 0 Italy\n1 4500 1 0 Spain\n1 3800 1 0 Poland\n1 2100 1 0 Romania\n1 1700 1 0 Netherlands\n1 1100 1 0 Greece\n1 1100 1 0 Portugal\n1 1100 1 0 Belgium\n1 1000 1 0 Czech\n1 1000 1 0 Hungary\n1 920 1 0 Sweden\n1 830 1 0 Austria\n1 760 1 0 Bulgaria\n1 550 1 0 Denmark\n1 540 1 0 Slovakia\n1 530 1 0 Finland\n1 450 1 0 Ireland\n1 330 1 0 Lithuania\n1 220 1 0 Latvia\n1 200 1 0 Slovenia\n1 130 1 0 Estonia\n1 87 1 0 Cyprus\n1 49 1 0 Luxembourg\n1 41 1 0 Malta\n0 0 0 217 EPP\n0 0 0 189 S and D\n0 0 0 74 ECR\n0 0 0 68 ALDE\n0 0 0 52 GUE NGL\n0 0 0 51 Greens EFA\n0 0 0 42 EFDD\n0 0 0 40 ENF\n0 0 0 18 Non Inscrits\n';
 var _user$project$Games$magicSquares = '# 3x3 Magic Square, sum is 15 in each row/col/diag.\n#\n# From \"Mathematics and Politics\", p.189\n#   by A. Taylor\n#\n# 4 3 8\n# 9 5 1\n# 2 7 6\n#\n# Players are the 9 fields. A coalition is winning, iff\n#   1) it has 4 or more players, or\n#   2) it\'s weight is strictly greater than 15, or\n#   3) it\'s weight is exactly 15 and it\'s a row.\n# Additionally, each coalition must have at least 3 players Otherwise, it is\n# losing.\n#\n%join 1 OR (2 AND 3) OR (5 OR 6 OR 7)\n4 3 16 15 3 3 3\n1 1  4  4 1 0 0 (1,1)\n1 1  3  3 1 0 0 (1,2)\n1 1  8  8 1 0 0 (1,3)\n1 1  9  9 0 1 0 (2,1)\n1 1  5  5 0 1 0 (2,2)\n1 1  1  1 0 1 0 (2,3)\n1 1  2  2 0 0 1 (3,1)\n1 1  7  7 0 0 1 (3,2)\n1 1  6  6 0 0 1 (3,3)\n';
 var _user$project$Games$canadian95 = '# System to Amend the Canadian Constitution\n#    from \"Mathematics and Politics\", Taylor, 1995, Springer.\n#\n7 50\n1 34 Ontario\n1 29 Quebec\n1 9 British Columbia\n1 7 Alberta\n1 5 Saskatchewan\n1 5 Manitoba\n1 4 Nova Scotia\n1 3 New Brunswick\n1 3 Newfoundland\n1 1 Prince Edward Island\n';
+var _user$project$Games$bolusTest = '2\n1\n1\n1\n';
 var _user$project$Games$henningTest = '50\n36\n35\n15\n8\n6\n';
+var _user$project$Games$test2 = '3\n3\n1\n1\n';
 var _user$project$Games$test = '3\n2\n1\n1\n';
 var _user$project$Games$gameDefinition = function (g) {
 	var _p0 = g;
 	switch (_p0.ctor) {
 		case 'EU27':
 			return _user$project$Games$eu27;
+		case 'EU28':
+			return _user$project$Games$eu28;
 		case 'Squares':
 			return _user$project$Games$magicSquares;
 		case 'Canadian95':
 			return _user$project$Games$canadian95;
 		case 'Test':
 			return _user$project$Games$test;
-		default:
+		case 'Test2':
+			return _user$project$Games$test2;
+		case 'HenningTest':
 			return _user$project$Games$henningTest;
+		default:
+			return _user$project$Games$bolusTest;
 	}
 };
 var _user$project$Games$showGame = function (g) {
@@ -9572,37 +9654,58 @@ var _user$project$Games$showGame = function (g) {
 	switch (_p1.ctor) {
 		case 'EU27':
 			return 'EU-27';
+		case 'EU28':
+			return 'EU-28';
 		case 'Squares':
 			return 'Magic Squares';
 		case 'Canadian95':
 			return 'Canadian 95';
 		case 'Test':
 			return 'Simple Game';
-		default:
+		case 'Test2':
+			return 'Simple Game 2';
+		case 'HenningTest':
 			return 'Henning Simple Game';
+		default:
+			return 'Bolus Simple Game';
 	}
 };
+var _user$project$Games$BolusTest = {ctor: 'BolusTest'};
 var _user$project$Games$HenningTest = {ctor: 'HenningTest'};
+var _user$project$Games$Test2 = {ctor: 'Test2'};
 var _user$project$Games$Test = {ctor: 'Test'};
 var _user$project$Games$Canadian95 = {ctor: 'Canadian95'};
 var _user$project$Games$Squares = {ctor: 'Squares'};
+var _user$project$Games$EU28 = {ctor: 'EU28'};
 var _user$project$Games$EU27 = {ctor: 'EU27'};
 var _user$project$Games$games = {
 	ctor: '::',
 	_0: _user$project$Games$EU27,
 	_1: {
 		ctor: '::',
-		_0: _user$project$Games$Squares,
+		_0: _user$project$Games$EU28,
 		_1: {
 			ctor: '::',
-			_0: _user$project$Games$Canadian95,
+			_0: _user$project$Games$Squares,
 			_1: {
 				ctor: '::',
-				_0: _user$project$Games$Test,
+				_0: _user$project$Games$Canadian95,
 				_1: {
 					ctor: '::',
-					_0: _user$project$Games$HenningTest,
-					_1: {ctor: '[]'}
+					_0: _user$project$Games$Test,
+					_1: {
+						ctor: '::',
+						_0: _user$project$Games$Test2,
+						_1: {
+							ctor: '::',
+							_0: _user$project$Games$HenningTest,
+							_1: {
+								ctor: '::',
+								_0: _user$project$Games$BolusTest,
+								_1: {ctor: '[]'}
+							}
+						}
+					}
 				}
 			}
 		}
@@ -9632,6 +9735,297 @@ var _user$project$Games$gameDecoder = function (str) {
 		return _elm_lang$core$Json_Decode$fail(
 			A2(_elm_lang$core$Basics_ops['++'], 'Failed to parse ', str));
 	}
+};
+
+var _user$project$Iteration$sumProd = F4(
+	function (f, g, sr, t) {
+		var node = F3(
+			function (pt, v, pe) {
+				return A2(
+					sr.plus,
+					A2(
+						sr.mult,
+						f(v),
+						pt),
+					A2(
+						sr.mult,
+						g(v),
+						pe));
+			});
+		return A4(_user$project$QOBDD$foldBDDShare, sr.zero, sr.one, node, t);
+	});
+var _user$project$Iteration$card = A3(
+	_user$project$Iteration$sumProd,
+	_elm_lang$core$Basics$always(1),
+	_elm_lang$core$Basics$always(1),
+	{
+		plus: F2(
+			function (x, y) {
+				return x + y;
+			}),
+		zero: 0,
+		mult: F2(
+			function (x, y) {
+				return x * y;
+			}),
+		one: 1
+	});
+var _user$project$Iteration$sumProdSpec = F4(
+	function (f, g, sr, t) {
+		var prod = A2(_elm_lang$core$List$foldr, sr.mult, sr.one);
+		var prods = function (_p0) {
+			var _p1 = _p0;
+			return A2(
+				sr.mult,
+				prod(
+					A2(_elm_lang$core$List$map, f, _p1._0)),
+				prod(
+					A2(_elm_lang$core$List$map, g, _p1._1)));
+		};
+		var sum = A2(_elm_lang$core$List$foldr, sr.plus, sr.zero);
+		return sum(
+			A2(
+				_elm_lang$core$List$map,
+				prods,
+				_user$project$Coalitions$all(t)));
+	});
+var _user$project$Iteration$Semiring = F4(
+	function (a, b, c, d) {
+		return {plus: a, zero: b, mult: c, one: d};
+	});
+
+var _user$project$Utils$fac = function (n) {
+	return (_elm_lang$core$Native_Utils.cmp(n, 0) < 1) ? 1 : (n * _user$project$Utils$fac(n - 1));
+};
+
+var _user$project$Vector$extend = function (v) {
+	return {ctor: '::', _0: 0, _1: v};
+};
+var _user$project$Vector$one = {
+	ctor: '::',
+	_0: 1,
+	_1: {ctor: '[]'}
+};
+var _user$project$Vector$zero = {ctor: '[]'};
+var _user$project$Vector$map2 = F3(
+	function (f, v1, v2) {
+		var _p0 = {ctor: '_Tuple2', _0: v1, _1: v2};
+		if (_p0._0.ctor === '[]') {
+			return v2;
+		} else {
+			if (_p0._1.ctor === '[]') {
+				return v1;
+			} else {
+				return {
+					ctor: '::',
+					_0: A2(f, _p0._0._0, _p0._1._0),
+					_1: A3(_user$project$Vector$map2, f, _p0._0._1, _p0._1._1)
+				};
+			}
+		}
+	});
+var _user$project$Vector$plus = _user$project$Vector$map2(
+	F2(
+		function (x, y) {
+			return x + y;
+		}));
+var _user$project$Vector$mult = F2(
+	function (v1, v2) {
+		var _p1 = {ctor: '_Tuple2', _0: v1, _1: v2};
+		if (_p1._0.ctor === '[]') {
+			return {ctor: '[]'};
+		} else {
+			if (_p1._1.ctor === '[]') {
+				return {ctor: '[]'};
+			} else {
+				return A2(
+					_user$project$Vector$plus,
+					A2(
+						_elm_lang$core$List$map,
+						F2(
+							function (x, y) {
+								return x * y;
+							})(_p1._0._0),
+						v2),
+					{
+						ctor: '::',
+						_0: 0,
+						_1: A2(_user$project$Vector$mult, _p1._0._1, v2)
+					});
+			}
+		}
+	});
+var _user$project$Vector$minus = _user$project$Vector$map2(
+	F2(
+		function (x, y) {
+			return x - y;
+		}));
+var _user$project$Vector$fromList = _elm_lang$core$Basics$identity;
+var _user$project$Vector$toList = _elm_lang$core$Basics$identity;
+
+var _user$project$Power$isPlayer = F4(
+	function (i, thenV, elseV, j) {
+		return _elm_lang$core$Native_Utils.eq(j, i) ? thenV : elseV;
+	});
+var _user$project$Power$withV = function (i) {
+	return A3(
+		_user$project$Iteration$sumProd,
+		_elm_lang$core$Basics$always(
+			_user$project$Vector$extend(_user$project$Vector$one)),
+		A3(_user$project$Power$isPlayer, i, _user$project$Vector$zero, _user$project$Vector$one),
+		{plus: _user$project$Vector$plus, zero: _user$project$Vector$zero, mult: _user$project$Vector$mult, one: _user$project$Vector$one});
+};
+var _user$project$Power$withoutV = function (i) {
+	return A3(
+		_user$project$Iteration$sumProd,
+		A3(
+			_user$project$Power$isPlayer,
+			i,
+			_user$project$Vector$zero,
+			_user$project$Vector$extend(_user$project$Vector$one)),
+		_elm_lang$core$Basics$always(_user$project$Vector$one),
+		{plus: _user$project$Vector$plus, zero: _user$project$Vector$zero, mult: _user$project$Vector$mult, one: _user$project$Vector$one});
+};
+var _user$project$Power$swingsV = F2(
+	function (i, bdd) {
+		return A2(
+			_user$project$Vector$minus,
+			A2(_user$project$Power$withV, i, bdd),
+			_user$project$Vector$extend(
+				A2(_user$project$Power$withoutV, i, bdd)));
+	});
+var _user$project$Power$allSwingsV = F2(
+	function (players, bdd) {
+		return A2(
+			_elm_lang$core$List$map,
+			function (i) {
+				return A2(_user$project$Power$swingsV, i, bdd);
+			},
+			players);
+	});
+var _user$project$Power$shapley = F3(
+	function (player, n, bdd) {
+		var v = A2(_user$project$Power$swingsV, player, bdd);
+		var s = _elm_lang$core$List$sum(
+			A2(
+				_elm_lang$core$List$indexedMap,
+				F2(
+					function (k, s) {
+						return (_user$project$Utils$fac(k - 1) * _user$project$Utils$fac(n - k)) * s;
+					}),
+				v));
+		return _elm_lang$core$Basics$toFloat(s) / _elm_lang$core$Basics$toFloat(
+			_user$project$Utils$fac(n));
+	});
+var _user$project$Power$shapleys = F2(
+	function (players, bdd) {
+		var n = _elm_lang$core$List$length(players);
+		var values = A2(
+			_elm_lang$core$List$map,
+			function (i) {
+				return A3(_user$project$Power$shapley, i, n, bdd);
+			},
+			players);
+		var total = _elm_lang$core$List$sum(values);
+		return A2(
+			_elm_lang$core$List$map,
+			function (v) {
+				return v / total;
+			},
+			values);
+	});
+var _user$project$Power$without = function (i) {
+	return A3(
+		_user$project$Iteration$sumProd,
+		A3(_user$project$Power$isPlayer, i, 0, 1),
+		_elm_lang$core$Basics$always(1),
+		{
+			plus: F2(
+				function (x, y) {
+					return x + y;
+				}),
+			zero: 0,
+			mult: F2(
+				function (x, y) {
+					return x * y;
+				}),
+			one: 1
+		});
+};
+var _user$project$Power$with = function (i) {
+	return A3(
+		_user$project$Iteration$sumProd,
+		_elm_lang$core$Basics$always(1),
+		A3(_user$project$Power$isPlayer, i, 0, 1),
+		{
+			plus: F2(
+				function (x, y) {
+					return x + y;
+				}),
+			zero: 0,
+			mult: F2(
+				function (x, y) {
+					return x * y;
+				}),
+			one: 1
+		});
+};
+var _user$project$Power$swings = F2(
+	function (i, bdd) {
+		return A2(_user$project$Power$with, i, bdd) - A2(_user$project$Power$without, i, bdd);
+	});
+var _user$project$Power$allSwings = F2(
+	function (players, bdd) {
+		return A2(
+			_elm_lang$core$List$map,
+			function (i) {
+				return A2(_user$project$Power$swings, i, bdd);
+			},
+			players);
+	});
+var _user$project$Power$banzhaf = F3(
+	function (player, n, bdd) {
+		return (_elm_lang$core$Basics$toFloat(
+			A2(_user$project$Power$swings, player, bdd)) / Math.pow(
+			2,
+			_elm_lang$core$Basics$toFloat(n))) - 1;
+	});
+var _user$project$Power$banzhafs = F2(
+	function (players, bdd) {
+		var sws = A2(
+			_elm_lang$core$List$map,
+			function (i) {
+				return _elm_lang$core$Basics$toFloat(
+					A2(_user$project$Power$swings, i, bdd));
+			},
+			players);
+		var total = _elm_lang$core$List$sum(sws);
+		return A2(
+			_elm_lang$core$List$map,
+			function (s) {
+				return s / total;
+			},
+			sws);
+	});
+var _user$project$Power$henningIndex = function (p) {
+	return A3(
+		_user$project$Iteration$sumProd,
+		p,
+		function (v) {
+			return 1 - p(v);
+		},
+		{
+			plus: F2(
+				function (x, y) {
+					return x + y;
+				}),
+			zero: 0,
+			mult: F2(
+				function (x, y) {
+					return x * y;
+				}),
+			one: 1
+		});
 };
 
 var _user$project$Probabilities$probsGen = function (n) {
@@ -9682,15 +10076,15 @@ var _user$project$Probabilities$probsDiagGen = function (n) {
 		_user$project$Probabilities$probsGen(n));
 };
 var _user$project$Probabilities$probTree = function (probs) {
-	var f = F3(
-		function (label, p1, p2) {
-			var _p0 = A2(_elm_lang$core$Dict$get, label, probs);
+	var node = F3(
+		function (p1, $var, p2) {
+			var _p0 = A2(_elm_lang$core$Dict$get, $var, probs);
 			if (_p0.ctor === 'Nothing') {
 				return _elm_lang$core$Native_Utils.crashCase(
 					'Probabilities',
 					{
-						start: {line: 25, column: 5},
-						end: {line: 27, column: 37}
+						start: {line: 35, column: 13},
+						end: {line: 40, column: 42}
 					},
 					_p0)(
 					A2(
@@ -9698,7 +10092,7 @@ var _user$project$Probabilities$probTree = function (probs) {
 						'Label ',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
-							_elm_lang$core$Basics$toString(label),
+							_elm_lang$core$Basics$toString($var),
 							A2(
 								_elm_lang$core$Basics_ops['++'],
 								' not found in ',
@@ -9708,11 +10102,11 @@ var _user$project$Probabilities$probTree = function (probs) {
 				return (_p2 * p1) + ((1 - _p2) * p2);
 			}
 		});
-	return A3(_user$project$QOBDD$foldTreeShare, 0, 1, f);
+	return A3(_user$project$QOBDD$foldBDDShare, 0, 1, node);
 };
 var _user$project$Probabilities$prob = F2(
 	function (probs, qobdd) {
-		return A2(_user$project$Probabilities$probTree, probs, qobdd.root);
+		return A2(_user$project$Probabilities$probTree, probs, qobdd.bdd);
 	});
 var _user$project$Probabilities$normalise = function (probs) {
 	var total = _elm_lang$core$List$sum(probs);
@@ -9734,6 +10128,30 @@ var _user$project$Probabilities$probs = F2(
 				probs));
 	});
 
+var _user$project$ProbGamesLab$viewResult = F2(
+	function (mqobdd, f) {
+		return A2(
+			_elm_lang$html$Html$div,
+			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					A2(
+						_elm_lang$core$Maybe$withDefault,
+						'no result',
+						A2(
+							_elm_lang$core$Maybe$map,
+							function (_p0) {
+								return _elm_lang$core$Basics$toString(
+									f(
+										function (_) {
+											return _.bdd;
+										}(_p0)));
+							},
+							mqobdd))),
+				_1: {ctor: '[]'}
+			});
+	});
 var _user$project$ProbGamesLab$viewPower = F2(
 	function (player, prob) {
 		return A2(
@@ -9828,15 +10246,15 @@ var _user$project$ProbGamesLab$viewProbs = function (probs) {
 		A2(_elm_lang$core$List$indexedMap, _user$project$ProbGamesLab$viewProbsRow, probs));
 };
 var _user$project$ProbGamesLab$viewFormula = function (model) {
-	var resultToString = function (_p0) {
-		var _p1 = _p0;
+	var resultToString = function (_p1) {
+		var _p2 = _p1;
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
-			_p1._1,
+			_p2._1,
 			A2(
 				_elm_lang$core$Basics_ops['++'],
 				'\n\n',
-				_user$project$GAMS$prettyStmts(_p1._0)));
+				_user$project$GAMS$prettyStmts(_p2._0)));
 	};
 	return A2(
 		_elm_lang$html$Html$div,
@@ -9879,9 +10297,9 @@ var _user$project$ProbGamesLab$viewCoalisions = function (model) {
 						'number of coalisions not available',
 						A2(
 							_elm_lang$core$Maybe$map,
-							function (_p2) {
+							function (_p3) {
 								return _elm_lang$core$Basics$toString(
-									_user$project$QOBDD$coalitions(_p2));
+									_user$project$QOBDD$coalitions(_p3));
 							},
 							model.qobdd))),
 				_1: {ctor: '[]'}
@@ -9903,9 +10321,9 @@ var _user$project$ProbGamesLab$viewSize = function (model) {
 						'no size available',
 						A2(
 							_elm_lang$core$Maybe$map,
-							function (_p3) {
+							function (_p4) {
 								return _elm_lang$core$Basics$toString(
-									_user$project$QOBDD$size(_p3));
+									_user$project$QOBDD$size(_p4));
 							},
 							model.qobdd))),
 				_1: {ctor: '[]'}
@@ -9965,8 +10383,8 @@ var _user$project$ProbGamesLab$hasText = function (model) {
 	return _elm_lang$core$String$isEmpty(model.text);
 };
 var _user$project$ProbGamesLab$hasQOBDD = function (model) {
-	var _p4 = model.qobdd;
-	if (_p4.ctor === 'Nothing') {
+	var _p5 = model.qobdd;
+	if (_p5.ctor === 'Nothing') {
 		return true;
 	} else {
 		return false;
@@ -9987,8 +10405,8 @@ var _user$project$ProbGamesLab$Probs = function (a) {
 };
 var _user$project$ProbGamesLab$update = F2(
 	function (msg, model) {
-		var _p5 = msg;
-		switch (_p5.ctor) {
+		var _p6 = msg;
+		switch (_p6.ctor) {
 			case 'Parse':
 				return {
 					ctor: '_Tuple2',
@@ -10001,7 +10419,7 @@ var _user$project$ProbGamesLab$update = F2(
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							text: _user$project$Games$gameDefinition(_p5._0)
+							text: _user$project$Games$gameDefinition(_p6._0)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
@@ -10010,47 +10428,47 @@ var _user$project$ProbGamesLab$update = F2(
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{text: _p5._0}),
+						{text: _p6._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Parsed':
-				var _p6 = _p5._0;
+				var _p7 = _p6._0;
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							qobdd: _elm_lang$core$Maybe$Just(_p6),
-							probs: _user$project$Probabilities$halvesDiag(_p6.vars)
+							qobdd: _elm_lang$core$Maybe$Just(_p7),
+							probs: _user$project$Probabilities$halvesDiag(_p7.vars)
 						}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 			case 'Random':
-				var _p7 = model.qobdd;
-				if (_p7.ctor === 'Just') {
+				var _p8 = model.qobdd;
+				if (_p8.ctor === 'Just') {
 					return {
 						ctor: '_Tuple2',
 						_0: model,
 						_1: A2(
 							_elm_lang$core$Random$generate,
 							_user$project$ProbGamesLab$Probs,
-							_user$project$Probabilities$probsDiagGen(_p7._0.vars))
+							_user$project$Probabilities$probsDiagGen(_p8._0.vars))
 					};
 				} else {
 					return _elm_lang$core$Native_Utils.crashCase(
 						'ProbGamesLab',
 						{
-							start: {line: 71, column: 13},
-							end: {line: 76, column: 35}
+							start: {line: 74, column: 13},
+							end: {line: 79, column: 35}
 						},
-						_p7)('');
+						_p8)('');
 				}
 			default:
 				return {
 					ctor: '_Tuple2',
 					_0: _elm_lang$core$Native_Utils.update(
 						model,
-						{probs: _p5._0}),
+						{probs: _p6._0}),
 					_1: _elm_lang$core$Platform_Cmd$none
 				};
 		}
@@ -10149,22 +10567,7 @@ var _user$project$ProbGamesLab$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: _user$project$ProbGamesLab$viewCoalisions(model),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$h2,
-								{ctor: '[]'},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Formula'),
-									_1: {ctor: '[]'}
-								}),
-							_1: {
-								ctor: '::',
-								_0: _user$project$ProbGamesLab$viewFormula(model),
-								_1: {ctor: '[]'}
-							}
-						}
+						_1: {ctor: '[]'}
 					}
 				}
 			}

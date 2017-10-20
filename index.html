@@ -1,13 +1,20 @@
 
 <div id="spelling"></div>
 
-<script type="text/javascript" src="ProbGamesLab.js"></script>
+<script type="text/javascript" src="BargainLab.js"></script>
 
 <script type="text/javascript" src="js/Config.js"></script>
 <script type="text/javascript" src="js/Helper.js"></script>
 <script type="text/javascript" src="js/Metric.js"></script>
 <script type="text/javascript">
   IncludeJavaScript (Config.closure_library_path + '/closure/goog/base.js');
+</script>
+<script type="text/javascript">
+  goog.require('goog.ui.Dialog');
+  goog.require('goog.string'); // goog.string.htmlEscape
+  goog.require('goog.ui.Tab');
+  goog.require('goog.ui.TabBar');
+  goog.require('goog.userAgent');
 </script>
 <script type="text/javascript">
   IncludeJavaScript (Config.jshashtable_path + '/jshashtable.js');
@@ -48,7 +55,7 @@
 <script type="text/javascript" src="js/core/WVGModelService.js"></script>
 <script type="text/javascript" src="js/core/FWVGModelService.js"></script>
 <script>
-  var app = Elm.ProbGamesLab.fullscreen();
+  var app = Elm.BargainLab.fullscreen();
   app.ports.parseMWVG.subscribe(function(str) {
     var game = parse_mwvg(str);
     var qobdd = game.getWinQOBDD();

@@ -9807,7 +9807,7 @@ var _user$project$Vector$one = {
 	_1: {ctor: '[]'}
 };
 var _user$project$Vector$zero = {ctor: '[]'};
-var _user$project$Vector$map2 = F3(
+var _user$project$Vector$alignWith = F3(
 	function (f, v1, v2) {
 		var _p0 = {ctor: '_Tuple2', _0: v1, _1: v2};
 		if (_p0._0.ctor === '[]') {
@@ -9819,12 +9819,12 @@ var _user$project$Vector$map2 = F3(
 				return {
 					ctor: '::',
 					_0: A2(f, _p0._0._0, _p0._1._0),
-					_1: A3(_user$project$Vector$map2, f, _p0._0._1, _p0._1._1)
+					_1: A3(_user$project$Vector$alignWith, f, _p0._0._1, _p0._1._1)
 				};
 			}
 		}
 	});
-var _user$project$Vector$plus = _user$project$Vector$map2(
+var _user$project$Vector$plus = _user$project$Vector$alignWith(
 	F2(
 		function (x, y) {
 			return x + y;
@@ -9855,7 +9855,7 @@ var _user$project$Vector$mult = F2(
 			}
 		}
 	});
-var _user$project$Vector$minus = _user$project$Vector$map2(
+var _user$project$Vector$minus = _user$project$Vector$alignWith(
 	F2(
 		function (x, y) {
 			return x - y;
@@ -10128,7 +10128,7 @@ var _user$project$Probabilities$probs = F2(
 				probs));
 	});
 
-var _user$project$ProbGamesLab$viewResult = F2(
+var _user$project$BargainLab$viewResult = F2(
 	function (mqobdd, f) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -10152,7 +10152,7 @@ var _user$project$ProbGamesLab$viewResult = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$ProbGamesLab$viewPower = F2(
+var _user$project$BargainLab$viewPower = F2(
 	function (player, prob) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -10173,7 +10173,7 @@ var _user$project$ProbGamesLab$viewPower = F2(
 				_1: {ctor: '[]'}
 			});
 	});
-var _user$project$ProbGamesLab$viewPowerListQOBDD = F2(
+var _user$project$BargainLab$viewPowerListQOBDD = F2(
 	function (qobdd, probs) {
 		var probDicts = A2(
 			_elm_lang$core$List$map,
@@ -10196,23 +10196,23 @@ var _user$project$ProbGamesLab$viewPowerListQOBDD = F2(
 				_0: _elm_lang$html$Html_Attributes$class('power-list'),
 				_1: {ctor: '[]'}
 			},
-			A2(_elm_lang$core$List$indexedMap, _user$project$ProbGamesLab$viewPower, ps));
+			A2(_elm_lang$core$List$indexedMap, _user$project$BargainLab$viewPower, ps));
 	});
-var _user$project$ProbGamesLab$viewPowerList = function (model) {
+var _user$project$BargainLab$viewPowerList = function (model) {
 	return A2(
 		_elm_lang$core$Maybe$withDefault,
 		_elm_lang$html$Html$text('no powers available'),
 		A2(
 			_elm_lang$core$Maybe$map,
 			function (q) {
-				return A2(_user$project$ProbGamesLab$viewPowerListQOBDD, q, model.probs);
+				return A2(_user$project$BargainLab$viewPowerListQOBDD, q, model.probs);
 			},
 			model.qobdd));
 };
-var _user$project$ProbGamesLab$viewProb = function (f) {
+var _user$project$BargainLab$viewProb = function (f) {
 	return _elm_lang$core$Basics$toString(f);
 };
-var _user$project$ProbGamesLab$viewProbsRow = F2(
+var _user$project$BargainLab$viewProbsRow = F2(
 	function (i, probs) {
 		return A2(
 			_elm_lang$html$Html$div,
@@ -10234,18 +10234,18 @@ var _user$project$ProbGamesLab$viewProbsRow = F2(
 							A2(
 								_elm_lang$core$List$intersperse,
 								', ',
-								A2(_elm_lang$core$List$map, _user$project$ProbGamesLab$viewProb, probs)))),
+								A2(_elm_lang$core$List$map, _user$project$BargainLab$viewProb, probs)))),
 					_1: {ctor: '[]'}
 				}
 			});
 	});
-var _user$project$ProbGamesLab$viewProbs = function (probs) {
+var _user$project$BargainLab$viewProbs = function (probs) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
-		A2(_elm_lang$core$List$indexedMap, _user$project$ProbGamesLab$viewProbsRow, probs));
+		A2(_elm_lang$core$List$indexedMap, _user$project$BargainLab$viewProbsRow, probs));
 };
-var _user$project$ProbGamesLab$viewFormula = function (model) {
+var _user$project$BargainLab$viewFormula = function (model) {
 	var resultToString = function (_p1) {
 		var _p2 = _p1;
 		return A2(
@@ -10282,7 +10282,7 @@ var _user$project$ProbGamesLab$viewFormula = function (model) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$ProbGamesLab$viewCoalisions = function (model) {
+var _user$project$BargainLab$viewCoalisions = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -10306,7 +10306,7 @@ var _user$project$ProbGamesLab$viewCoalisions = function (model) {
 			}
 		});
 };
-var _user$project$ProbGamesLab$viewSize = function (model) {
+var _user$project$BargainLab$viewSize = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -10330,7 +10330,7 @@ var _user$project$ProbGamesLab$viewSize = function (model) {
 			}
 		});
 };
-var _user$project$ProbGamesLab$gameOption = function (game) {
+var _user$project$BargainLab$gameOption = function (game) {
 	return A2(
 		_elm_lang$html$Html$option,
 		{
@@ -10346,7 +10346,7 @@ var _user$project$ProbGamesLab$gameOption = function (game) {
 			_1: {ctor: '[]'}
 		});
 };
-var _user$project$ProbGamesLab$gameOptions = {
+var _user$project$BargainLab$gameOptions = {
 	ctor: '::',
 	_0: A2(
 		_elm_lang$html$Html$option,
@@ -10368,9 +10368,9 @@ var _user$project$ProbGamesLab$gameOptions = {
 			_0: _elm_lang$html$Html$text('Please Choose'),
 			_1: {ctor: '[]'}
 		}),
-	_1: A2(_elm_lang$core$List$map, _user$project$ProbGamesLab$gameOption, _user$project$Games$games)
+	_1: A2(_elm_lang$core$List$map, _user$project$BargainLab$gameOption, _user$project$Games$games)
 };
-var _user$project$ProbGamesLab$init = {
+var _user$project$BargainLab$init = {
 	ctor: '_Tuple2',
 	_0: {
 		text: '',
@@ -10379,10 +10379,10 @@ var _user$project$ProbGamesLab$init = {
 	},
 	_1: _elm_lang$core$Platform_Cmd$none
 };
-var _user$project$ProbGamesLab$hasText = function (model) {
+var _user$project$BargainLab$hasText = function (model) {
 	return _elm_lang$core$String$isEmpty(model.text);
 };
-var _user$project$ProbGamesLab$hasQOBDD = function (model) {
+var _user$project$BargainLab$hasQOBDD = function (model) {
 	var _p5 = model.qobdd;
 	if (_p5.ctor === 'Nothing') {
 		return true;
@@ -10390,20 +10390,20 @@ var _user$project$ProbGamesLab$hasQOBDD = function (model) {
 		return false;
 	}
 };
-var _user$project$ProbGamesLab$Model = F3(
+var _user$project$BargainLab$Model = F3(
 	function (a, b, c) {
 		return {text: a, qobdd: b, probs: c};
 	});
-var _user$project$ProbGamesLab$Parsed = function (a) {
+var _user$project$BargainLab$Parsed = function (a) {
 	return {ctor: 'Parsed', _0: a};
 };
-var _user$project$ProbGamesLab$subscriptions = function (model) {
-	return _user$project$QOBDD$parsedMWVG(_user$project$ProbGamesLab$Parsed);
+var _user$project$BargainLab$subscriptions = function (model) {
+	return _user$project$QOBDD$parsedMWVG(_user$project$BargainLab$Parsed);
 };
-var _user$project$ProbGamesLab$Probs = function (a) {
+var _user$project$BargainLab$Probs = function (a) {
 	return {ctor: 'Probs', _0: a};
 };
-var _user$project$ProbGamesLab$update = F2(
+var _user$project$BargainLab$update = F2(
 	function (msg, model) {
 		var _p6 = msg;
 		switch (_p6.ctor) {
@@ -10451,12 +10451,12 @@ var _user$project$ProbGamesLab$update = F2(
 						_0: model,
 						_1: A2(
 							_elm_lang$core$Random$generate,
-							_user$project$ProbGamesLab$Probs,
+							_user$project$BargainLab$Probs,
 							_user$project$Probabilities$probsDiagGen(_p8._0.vars))
 					};
 				} else {
 					return _elm_lang$core$Native_Utils.crashCase(
-						'ProbGamesLab',
+						'BargainLab',
 						{
 							start: {line: 74, column: 13},
 							end: {line: 79, column: 35}
@@ -10473,15 +10473,15 @@ var _user$project$ProbGamesLab$update = F2(
 				};
 		}
 	});
-var _user$project$ProbGamesLab$Random = {ctor: 'Random'};
-var _user$project$ProbGamesLab$Input = function (a) {
+var _user$project$BargainLab$Random = {ctor: 'Random'};
+var _user$project$BargainLab$Input = function (a) {
 	return {ctor: 'Input', _0: a};
 };
-var _user$project$ProbGamesLab$Display = function (a) {
+var _user$project$BargainLab$Display = function (a) {
 	return {ctor: 'Display', _0: a};
 };
-var _user$project$ProbGamesLab$Parse = {ctor: 'Parse'};
-var _user$project$ProbGamesLab$headerRow = function (model) {
+var _user$project$BargainLab$Parse = {ctor: 'Parse'};
+var _user$project$BargainLab$headerRow = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
@@ -10499,22 +10499,22 @@ var _user$project$ProbGamesLab$headerRow = function (model) {
 							'change',
 							A2(
 								_elm_lang$core$Json_Decode$map,
-								_user$project$ProbGamesLab$Display,
+								_user$project$BargainLab$Display,
 								A2(_elm_lang$core$Json_Decode$andThen, _user$project$Games$gameDecoder, _elm_lang$html$Html_Events$targetValue))),
 						_1: {ctor: '[]'}
 					},
-					_user$project$ProbGamesLab$gameOptions),
+					_user$project$BargainLab$gameOptions),
 				_1: {
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$button,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_user$project$ProbGamesLab$Parse),
+							_0: _elm_lang$html$Html_Events$onClick(_user$project$BargainLab$Parse),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$disabled(
-									_user$project$ProbGamesLab$hasText(model)),
+									_user$project$BargainLab$hasText(model)),
 								_1: {ctor: '[]'}
 							}
 						},
@@ -10528,13 +10528,13 @@ var _user$project$ProbGamesLab$headerRow = function (model) {
 			}
 		});
 };
-var _user$project$ProbGamesLab$view = function (model) {
+var _user$project$BargainLab$view = function (model) {
 	return A2(
 		_elm_lang$html$Html$div,
 		{ctor: '[]'},
 		{
 			ctor: '::',
-			_0: _user$project$ProbGamesLab$headerRow(model),
+			_0: _user$project$BargainLab$headerRow(model),
 			_1: {
 				ctor: '::',
 				_0: A2(
@@ -10550,7 +10550,7 @@ var _user$project$ProbGamesLab$view = function (model) {
 								_0: _elm_lang$html$Html_Attributes$placeholder('Please input game'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onInput(_user$project$ProbGamesLab$Input),
+									_0: _elm_lang$html$Html_Events$onInput(_user$project$BargainLab$Input),
 									_1: {ctor: '[]'}
 								}
 							}
@@ -10563,23 +10563,68 @@ var _user$project$ProbGamesLab$view = function (model) {
 					}),
 				_1: {
 					ctor: '::',
-					_0: _user$project$ProbGamesLab$viewSize(model),
+					_0: _user$project$BargainLab$viewSize(model),
 					_1: {
 						ctor: '::',
-						_0: _user$project$ProbGamesLab$viewCoalisions(model),
-						_1: {ctor: '[]'}
+						_0: _user$project$BargainLab$viewCoalisions(model),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$h2,
+								{ctor: '[]'},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('GAMS Code'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$p,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('The following code can be used in '),
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$a,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$href('https://www.gams.com'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text('GAMS'),
+													_1: {ctor: '[]'}
+												}),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html$text(' to calculate the probability of a proposal to be accepted.'),
+												_1: {ctor: '[]'}
+											}
+										}
+									}),
+								_1: {
+									ctor: '::',
+									_0: _user$project$BargainLab$viewFormula(model),
+									_1: {ctor: '[]'}
+								}
+							}
+						}
 					}
 				}
 			}
 		});
 };
-var _user$project$ProbGamesLab$main = _elm_lang$html$Html$program(
-	{init: _user$project$ProbGamesLab$init, view: _user$project$ProbGamesLab$view, update: _user$project$ProbGamesLab$update, subscriptions: _user$project$ProbGamesLab$subscriptions})();
+var _user$project$BargainLab$main = _elm_lang$html$Html$program(
+	{init: _user$project$BargainLab$init, view: _user$project$BargainLab$view, update: _user$project$BargainLab$update, subscriptions: _user$project$BargainLab$subscriptions})();
 
 var Elm = {};
-Elm['ProbGamesLab'] = Elm['ProbGamesLab'] || {};
-if (typeof _user$project$ProbGamesLab$main !== 'undefined') {
-    _user$project$ProbGamesLab$main(Elm['ProbGamesLab'], 'ProbGamesLab', undefined);
+Elm['BargainLab'] = Elm['BargainLab'] || {};
+if (typeof _user$project$BargainLab$main !== 'undefined') {
+    _user$project$BargainLab$main(Elm['BargainLab'], 'BargainLab', undefined);
 }
 
 if (typeof define === "function" && define['amd'])

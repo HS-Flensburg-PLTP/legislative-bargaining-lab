@@ -30,18 +30,51 @@ type Exp
 
 
 add : Exp -> Exp -> Exp
-add =
-    BinOp Add
+add exp1 exp2 =
+    case ( exp1, exp2 ) of
+        ( Num n1, Num n2 ) ->
+            Num (n1 + n2)
+
+        ( Num 0, _ ) ->
+            exp2
+
+        ( _, Num 0 ) ->
+            exp1
+
+        _ ->
+            BinOp Add exp1 exp2
 
 
 minus : Exp -> Exp -> Exp
-minus =
-    BinOp Minus
+minus exp1 exp2 =
+    case ( exp1, exp2 ) of
+        ( Num n1, Num n2 ) ->
+            Num (n1 - n2)
+
+        _ ->
+            BinOp Minus exp1 exp2
 
 
 mult : Exp -> Exp -> Exp
-mult =
-    BinOp Mult
+mult exp1 exp2 =
+    case ( exp1, exp2 ) of
+        ( Num n1, Num n2 ) ->
+            Num (n1 * n2)
+
+        ( Num 0, _ ) ->
+            Num 0
+
+        ( Num 1, _ ) ->
+            exp2
+
+        ( _, Num 0 ) ->
+            Num 0
+
+        ( _, Num 1 ) ->
+            exp1
+
+        _ ->
+            BinOp Mult exp1 exp2
 
 
 prettyExp : Exp -> String

@@ -14,7 +14,7 @@ type alias Semiring a =
 
 
 sumProdSpec : (Int -> a) -> (Int -> a) -> Semiring a -> BDD -> a
-sumProdSpec f g sr t =
+sumProdSpec f g sr bdd =
     let
         sum =
             foldr sr.plus sr.zero
@@ -27,16 +27,16 @@ sumProdSpec f g sr t =
                 (prod (map f win))
                 (prod (map g comp))
     in
-    sum (map prods (Coalitions.all t))
+    sum (map prods (Coalitions.all bdd))
 
 
 sumProd : (Int -> a) -> (Int -> a) -> Semiring a -> BDD -> a
-sumProd f g sr t =
+sumProd f g sr bdd =
     let
         node pt v pe =
             sr.plus (sr.mult (f v) pt) (sr.mult (g v) pe)
     in
-    foldBDDShare sr.zero sr.one node t
+    foldBDDShare sr.zero sr.one node bdd
 
 
 card : BDD -> Int

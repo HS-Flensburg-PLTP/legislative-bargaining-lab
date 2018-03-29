@@ -90,39 +90,50 @@ prettyExp exp =
             "(" ++ prettyExp exp ++ " " ++ prettyOp op ++ " " ++ prettyExp exp2 ++ ")"
 
 
-type Stmt
-    = Assign String Exp
+type Def
+    = Def String Eqn
 
 
-(:=) : String -> Exp -> Stmt
-(:=) var exp =
-    Assign var exp
+prettyDefs : List Def -> String
+prettyDefs defs =
+    String.concat (List.map prettyDef defs)
 
 
-prettyStmts : List Stmt -> String
-prettyStmts stmts =
-    String.concat (List.map prettyStmt stmts)
+prettyDef : Def -> String
+prettyDef def =
+    case def of
+        Def var eqn ->
+            var ++ "..\n " ++ prettyEqn eqn
 
 
-prettyStmt : Stmt -> String
-prettyStmt stmt =
-    case stmt of
-        Assign var exp ->
-            var ++ " = " ++ prettyExp exp ++ ";\n"
+type Eqn
+    = Eqn String Exp
+
+
+(==) : String -> Exp -> Eqn
+(==) var exp =
+    Eqn var exp
+
+
+prettyEqn : Eqn -> String
+prettyEqn eqn =
+    case eqn of
+        Eqn var exp ->
+            var ++ " =E= " ++ prettyExp exp ++ ";\n"
 
 
 vars : Int -> Dict Int String
 vars n =
-    Dict.fromList (List.map (\i -> ( i, "p0(\"" ++ toString i ++ "\", g)" )) (List.range 0 (n - 1)))
+    Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ toString i ++ "\")" )) (List.range 0 (n - 1)))
 
 
-stmt : QOBDD -> ( List Stmt, String )
-stmt qobdd =
+def : QOBDD -> ( List Def, String )
+def qobdd =
     let
-        ( stmts, v, vs ) =
-            stmtTree (vars qobdd.vars) qobdd.bdd
+        ( defs, v, vs ) =
+            defTree (vars qobdd.vars) qobdd.bdd
     in
-    ( stmts ++ [ "%1" := v ], setVars vs )
+    ( defs ++ [ Def "def_p_bdd(g)" ("P(g)" == v) ], setVars vs )
 
 
 
@@ -139,10 +150,13 @@ setVars vars =
     context (String.concat <| List.intersperse ", " <| List.map toString vars)
 
 
-stmtTree : Dict Int String -> BDD -> ( List Stmt, Exp, List Int )
-stmtTree vars =
+defTree : Dict Int String -> BDD -> ( List Def, Exp, List Int )
+defTree vars =
     let
-        term i =
+        defvar i =
+            "def_t" ++ toString i ++ "(g)"
+
+        termvar i =
             "t(g, \"" ++ toString i ++ "\")"
 
         ident i =
@@ -154,13 +168,16 @@ stmtTree vars =
                     v
 
         ref i =
-            ( [], Var (term i), [] )
+            ( [], Var (termvar i), [] )
 
         node i ( s1, v1, vars1 ) label ( s2, v2, vars2 ) =
             let
-                assignment =
-                    term i := add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)
+                eqn =
+                    termvar i == add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)
+
+                def =
+                    Def (defvar i) eqn
             in
-            ( s1 ++ s2 ++ [ assignment ], Var (term i), i :: vars1 ++ vars2 )
+            ( s1 ++ s2 ++ [ def ], Var (termvar i), i :: vars1 ++ vars2 )
     in
     QOBDD.foldBDD ( [], Num 0, [] ) ( [], Num 1, [] ) ref node

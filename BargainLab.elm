@@ -146,10 +146,10 @@ viewFormula : Model -> Html Msg
 viewFormula model =
     let
         resultToString ( stmts, vs ) =
-            vs ++ "\n\n" ++ GAMS.prettyStmts stmts
+            vs ++ "\n\n" ++ GAMS.prettyDefs stmts
     in
     div []
-        [ pre [] [ text (Maybe.withDefault "formula not available" (Maybe.map (\o -> resultToString <| GAMS.stmt <| o) model.qobdd)) ] ]
+        [ pre [] [ text (Maybe.withDefault "formula not available" (Maybe.map (\o -> resultToString <| GAMS.def <| o) model.qobdd)) ] ]
 
 
 viewProbs : List (List Float) -> Html Msg

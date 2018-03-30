@@ -9379,6 +9379,38 @@ var _user$project$Coalitions$winning = function (bdd) {
 		bdd);
 };
 
+var _user$project$GAMS$defVar = function (i) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'def_t',
+		_elm_lang$core$Basics$toString(i));
+};
+var _user$project$GAMS$equation = function (i) {
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_user$project$GAMS$defVar(i),
+		'(g)');
+};
+var _user$project$GAMS$mainEquation = 'def_p_bdd(g)';
+var _user$project$GAMS$model = function (vars) {
+	var line = function (v) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			' ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$GAMS$defVar(v),
+				'\n'));
+	};
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'model nash_nlp /\n',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$String$concat(
+				A2(_elm_lang$core$List$map, line, vars)),
+			'/;'));
+};
 var _user$project$GAMS$setVars = function (vars) {
 	var context = function (v) {
 		return A2(
@@ -9393,6 +9425,48 @@ var _user$project$GAMS$setVars = function (vars) {
 				', ',
 				A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, vars))));
 };
+var _user$project$GAMS$equations = function (vars) {
+	var line = function (i) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			' ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$GAMS$equation(i),
+				'\n'));
+	};
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'equations\n',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$String$concat(
+				A2(_elm_lang$core$List$map, line, vars)),
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				' ',
+				A2(_elm_lang$core$Basics_ops['++'], _user$project$GAMS$mainEquation, '\n;'))));
+};
+var _user$project$GAMS$definitions = function (vars) {
+	var line = function (i) {
+		return A2(
+			_elm_lang$core$Basics_ops['++'],
+			' ',
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				_user$project$GAMS$defVar(i),
+				'\n'));
+	};
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		'equations\n',
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			_elm_lang$core$String$concat(
+				A2(_elm_lang$core$List$map, line, vars)),
+			';'));
+};
+var _user$project$GAMS$variables = 'variables\n t(g, nodes)\n;';
 var _user$project$GAMS$vars = function (n) {
 	return _elm_lang$core$Dict$fromList(
 		A2(
@@ -9403,11 +9477,11 @@ var _user$project$GAMS$vars = function (n) {
 					_0: i,
 					_1: A2(
 						_elm_lang$core$Basics_ops['++'],
-						'p0(\"',
+						'PI(g, \"',
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							_elm_lang$core$Basics$toString(i),
-							'\", g)'))
+							'\")'))
 				};
 			},
 			A2(_elm_lang$core$List$range, 0, n - 1)));
@@ -9452,22 +9526,32 @@ var _user$project$GAMS$prettyExp = function (exp) {
 									')'))))));
 	}
 };
-var _user$project$GAMS$prettyStmt = function (stmt) {
-	var _p2 = stmt;
+var _user$project$GAMS$prettyEqn = function (eqn) {
+	var _p2 = eqn;
 	return A2(
 		_elm_lang$core$Basics_ops['++'],
 		_p2._0,
 		A2(
 			_elm_lang$core$Basics_ops['++'],
-			' = ',
+			' =E= ',
 			A2(
 				_elm_lang$core$Basics_ops['++'],
 				_user$project$GAMS$prettyExp(_p2._1),
 				';\n')));
 };
-var _user$project$GAMS$prettyStmts = function (stmts) {
+var _user$project$GAMS$prettyDef = function (def) {
+	var _p3 = def;
+	return A2(
+		_elm_lang$core$Basics_ops['++'],
+		_p3._0,
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			'..\n ',
+			_user$project$GAMS$prettyEqn(_p3._1)));
+};
+var _user$project$GAMS$prettyDefs = function (defs) {
 	return _elm_lang$core$String$concat(
-		A2(_elm_lang$core$List$map, _user$project$GAMS$prettyStmt, stmts));
+		A2(_elm_lang$core$List$map, _user$project$GAMS$prettyDef, defs));
 };
 var _user$project$GAMS$Minus = {ctor: 'Minus'};
 var _user$project$GAMS$Add = {ctor: 'Add'};
@@ -9476,35 +9560,113 @@ var _user$project$GAMS$BinOp = F3(
 	function (a, b, c) {
 		return {ctor: 'BinOp', _0: a, _1: b, _2: c};
 	});
-var _user$project$GAMS$add = _user$project$GAMS$BinOp(_user$project$GAMS$Add);
-var _user$project$GAMS$minus = _user$project$GAMS$BinOp(_user$project$GAMS$Minus);
-var _user$project$GAMS$mult = _user$project$GAMS$BinOp(_user$project$GAMS$Mult);
 var _user$project$GAMS$Var = function (a) {
 	return {ctor: 'Var', _0: a};
 };
 var _user$project$GAMS$Num = function (a) {
 	return {ctor: 'Num', _0: a};
 };
-var _user$project$GAMS$Assign = F2(
+var _user$project$GAMS$add = F2(
+	function (exp1, exp2) {
+		var _p4 = {ctor: '_Tuple2', _0: exp1, _1: exp2};
+		_v4_3:
+		do {
+			if (_p4.ctor === '_Tuple2') {
+				if (_p4._0.ctor === 'Num') {
+					if (_p4._1.ctor === 'Num') {
+						return _user$project$GAMS$Num(_p4._0._0 + _p4._1._0);
+					} else {
+						if (_p4._0._0 === 0) {
+							return exp2;
+						} else {
+							break _v4_3;
+						}
+					}
+				} else {
+					if ((_p4._1.ctor === 'Num') && (_p4._1._0 === 0)) {
+						return exp1;
+					} else {
+						break _v4_3;
+					}
+				}
+			} else {
+				break _v4_3;
+			}
+		} while(false);
+		return A3(_user$project$GAMS$BinOp, _user$project$GAMS$Add, exp1, exp2);
+	});
+var _user$project$GAMS$minus = F2(
+	function (exp1, exp2) {
+		var _p5 = {ctor: '_Tuple2', _0: exp1, _1: exp2};
+		if (((_p5.ctor === '_Tuple2') && (_p5._0.ctor === 'Num')) && (_p5._1.ctor === 'Num')) {
+			return _user$project$GAMS$Num(_p5._0._0 - _p5._1._0);
+		} else {
+			return A3(_user$project$GAMS$BinOp, _user$project$GAMS$Minus, exp1, exp2);
+		}
+	});
+var _user$project$GAMS$mult = F2(
+	function (exp1, exp2) {
+		var _p6 = {ctor: '_Tuple2', _0: exp1, _1: exp2};
+		_v6_5:
+		do {
+			if (_p6.ctor === '_Tuple2') {
+				if (_p6._0.ctor === 'Num') {
+					if (_p6._1.ctor === 'Num') {
+						return _user$project$GAMS$Num(_p6._0._0 * _p6._1._0);
+					} else {
+						switch (_p6._0._0) {
+							case 0:
+								return _user$project$GAMS$Num(0);
+							case 1:
+								return exp2;
+							default:
+								break _v6_5;
+						}
+					}
+				} else {
+					if (_p6._1.ctor === 'Num') {
+						switch (_p6._1._0) {
+							case 0:
+								return _user$project$GAMS$Num(0);
+							case 1:
+								return exp1;
+							default:
+								break _v6_5;
+						}
+					} else {
+						break _v6_5;
+					}
+				}
+			} else {
+				break _v6_5;
+			}
+		} while(false);
+		return A3(_user$project$GAMS$BinOp, _user$project$GAMS$Mult, exp1, exp2);
+	});
+var _user$project$GAMS$Def = F2(
 	function (a, b) {
-		return {ctor: 'Assign', _0: a, _1: b};
+		return {ctor: 'Def', _0: a, _1: b};
+	});
+var _user$project$GAMS$Eqn = F2(
+	function (a, b) {
+		return {ctor: 'Eqn', _0: a, _1: b};
 	});
 var _user$project$GAMS_ops = _user$project$GAMS_ops || {};
-_user$project$GAMS_ops[':='] = F2(
+_user$project$GAMS_ops['=='] = F2(
 	function ($var, exp) {
-		return A2(_user$project$GAMS$Assign, $var, exp);
+		return A2(_user$project$GAMS$Eqn, $var, exp);
 	});
-var _user$project$GAMS$stmtTree = function (vars) {
+var _user$project$GAMS$defTree = function (vars) {
 	var ident = function (i) {
-		var _p3 = A2(_elm_lang$core$Dict$get, i, vars);
-		if (_p3.ctor === 'Nothing') {
+		var _p7 = A2(_elm_lang$core$Dict$get, i, vars);
+		if (_p7.ctor === 'Nothing') {
 			return _elm_lang$core$Native_Utils.crashCase(
 				'GAMS',
 				{
-					start: {line: 116, column: 13},
-					end: {line: 121, column: 22}
+					start: {line: 227, column: 13},
+					end: {line: 232, column: 22}
 				},
-				_p3)(
+				_p7)(
 				A2(
 					_elm_lang$core$Basics_ops['++'],
 					'Error: ',
@@ -9516,10 +9678,10 @@ var _user$project$GAMS$stmtTree = function (vars) {
 							' not found in ',
 							_elm_lang$core$Basics$toString(vars)))));
 		} else {
-			return _p3._0;
+			return _p7._0;
 		}
 	};
-	var term = function (i) {
+	var termvar = function (i) {
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
 			't(g, \"',
@@ -9533,24 +9695,24 @@ var _user$project$GAMS$stmtTree = function (vars) {
 			ctor: '_Tuple3',
 			_0: {ctor: '[]'},
 			_1: _user$project$GAMS$Var(
-				term(i)),
+				termvar(i)),
 			_2: {ctor: '[]'}
 		};
 	};
 	var node = F4(
-		function (i, _p6, label, _p5) {
-			var _p7 = _p6;
-			var _p8 = _p5;
-			var assignment = A2(
-				_user$project$GAMS_ops[':='],
-				term(i),
+		function (i, _p10, label, _p9) {
+			var _p11 = _p10;
+			var _p12 = _p9;
+			var eqn = A2(
+				_user$project$GAMS_ops['=='],
+				termvar(i),
 				A2(
 					_user$project$GAMS$add,
 					A2(
 						_user$project$GAMS$mult,
 						_user$project$GAMS$Var(
 							ident(label)),
-						_p7._1),
+						_p11._1),
 					A2(
 						_user$project$GAMS$mult,
 						A2(
@@ -9558,26 +9720,30 @@ var _user$project$GAMS$stmtTree = function (vars) {
 							_user$project$GAMS$Num(1),
 							_user$project$GAMS$Var(
 								ident(label))),
-						_p8._1)));
+						_p12._1)));
+			var def = A2(
+				_user$project$GAMS$Def,
+				_user$project$GAMS$equation(i),
+				eqn);
 			return {
 				ctor: '_Tuple3',
 				_0: A2(
 					_elm_lang$core$Basics_ops['++'],
-					_p7._0,
+					_p11._0,
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						_p8._0,
+						_p12._0,
 						{
 							ctor: '::',
-							_0: assignment,
+							_0: def,
 							_1: {ctor: '[]'}
 						})),
 				_1: _user$project$GAMS$Var(
-					term(i)),
+					termvar(i)),
 				_2: {
 					ctor: '::',
 					_0: i,
-					_1: A2(_elm_lang$core$Basics_ops['++'], _p7._2, _p8._2)
+					_1: A2(_elm_lang$core$Basics_ops['++'], _p11._2, _p12._2)
 				}
 			};
 		});
@@ -9598,25 +9764,31 @@ var _user$project$GAMS$stmtTree = function (vars) {
 		ref,
 		node);
 };
-var _user$project$GAMS$stmt = function (qobdd) {
-	var _p9 = A2(
-		_user$project$GAMS$stmtTree,
+var _user$project$GAMS$def = function (qobdd) {
+	var _p13 = A2(
+		_user$project$GAMS$defTree,
 		_user$project$GAMS$vars(qobdd.vars),
 		qobdd.bdd);
-	var stmts = _p9._0;
-	var v = _p9._1;
-	var vs = _p9._2;
+	var defs = _p13._0;
+	var v = _p13._1;
+	var vs = _p13._2;
 	return {
-		ctor: '_Tuple2',
+		ctor: '_Tuple5',
 		_0: A2(
 			_elm_lang$core$Basics_ops['++'],
-			stmts,
+			defs,
 			{
 				ctor: '::',
-				_0: A2(_user$project$GAMS_ops[':='], '%1', v),
+				_0: A2(
+					_user$project$GAMS$Def,
+					_user$project$GAMS$mainEquation,
+					A2(_user$project$GAMS_ops['=='], 'P(g)', v)),
 				_1: {ctor: '[]'}
 			}),
-		_1: _user$project$GAMS$setVars(vs)
+		_1: _user$project$GAMS$variables,
+		_2: _user$project$GAMS$setVars(vs),
+		_3: _user$project$GAMS$equations(vs),
+		_4: _user$project$GAMS$model(vs)
 	};
 };
 
@@ -9738,7 +9910,7 @@ var _user$project$Games$gameDecoder = function (str) {
 };
 
 var _user$project$Iteration$sumProd = F4(
-	function (f, g, sr, t) {
+	function (f, g, sr, bdd) {
 		var node = F3(
 			function (pt, v, pe) {
 				return A2(
@@ -9752,7 +9924,7 @@ var _user$project$Iteration$sumProd = F4(
 						g(v),
 						pe));
 			});
-		return A4(_user$project$QOBDD$foldBDDShare, sr.zero, sr.one, node, t);
+		return A4(_user$project$QOBDD$foldBDDShare, sr.zero, sr.one, node, bdd);
 	});
 var _user$project$Iteration$card = A3(
 	_user$project$Iteration$sumProd,
@@ -9771,7 +9943,7 @@ var _user$project$Iteration$card = A3(
 		one: 1
 	});
 var _user$project$Iteration$sumProdSpec = F4(
-	function (f, g, sr, t) {
+	function (f, g, sr, bdd) {
 		var prod = A2(_elm_lang$core$List$foldr, sr.mult, sr.one);
 		var prods = function (_p0) {
 			var _p1 = _p0;
@@ -9787,7 +9959,7 @@ var _user$project$Iteration$sumProdSpec = F4(
 			A2(
 				_elm_lang$core$List$map,
 				prods,
-				_user$project$Coalitions$all(t)));
+				_user$project$Coalitions$all(bdd)));
 	});
 var _user$project$Iteration$Semiring = F4(
 	function (a, b, c, d) {
@@ -10250,11 +10422,32 @@ var _user$project$BargainLab$viewFormula = function (model) {
 		var _p2 = _p1;
 		return A2(
 			_elm_lang$core$Basics_ops['++'],
-			_p2._1,
+			'## definitions.gms:\n\n',
 			A2(
 				_elm_lang$core$Basics_ops['++'],
-				'\n\n',
-				_user$project$GAMS$prettyStmts(_p2._0)));
+				_p2._2,
+				A2(
+					_elm_lang$core$Basics_ops['++'],
+					'\n\n',
+					A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p2._1,
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							'\n\n',
+							A2(
+								_elm_lang$core$Basics_ops['++'],
+								_p2._3,
+								A2(
+									_elm_lang$core$Basics_ops['++'],
+									'\n\n',
+									A2(
+										_elm_lang$core$Basics_ops['++'],
+										_user$project$GAMS$prettyDefs(_p2._0),
+										A2(
+											_elm_lang$core$Basics_ops['++'],
+											'\n\n',
+											A2(_elm_lang$core$Basics_ops['++'], '## model.gms:\n\n', _p2._4))))))))));
 	};
 	return A2(
 		_elm_lang$html$Html$div,
@@ -10274,7 +10467,7 @@ var _user$project$BargainLab$viewFormula = function (model) {
 								_elm_lang$core$Maybe$map,
 								function (o) {
 									return resultToString(
-										_user$project$GAMS$stmt(o));
+										_user$project$GAMS$def(o));
 								},
 								model.qobdd))),
 					_1: {ctor: '[]'}

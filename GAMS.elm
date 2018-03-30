@@ -127,20 +127,58 @@ vars n =
     Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ toString i ++ "\")" )) (List.range 0 (n - 1)))
 
 
-def : QOBDD -> ( List Def, String )
+def : QOBDD -> ( List Def, String, String, String )
 def qobdd =
     let
         ( defs, v, vs ) =
             defTree (vars qobdd.vars) qobdd.bdd
     in
-    ( defs ++ [ Def "def_p_bdd(g)" ("P(g)" == v) ], setVars vs )
+    ( defs ++ [ Def mainEquation ("P(g)" == v) ]
+    , variables
+    , setVars vs
+    , equations vs
+    )
 
 
+variables : String
+variables =
+    "variables\n t(g, nodes)\n;"
 
--- Generates a string in the form of
--- set nodes /19588, 19586, 19590, 19582, 19584, 19592/;
+
+{-| Generates a string in the form of
+def_t5
+def_t7
+-}
+definitions : List Int -> String
+definitions vars =
+    let
+        defvar i =
+            "def_t" ++ toString i ++ "(g)"
+
+        line i =
+            " " ++ defvar i ++ "\n"
+    in
+    "equations\n" ++ String.concat (List.map line vars) ++ ";"
 
 
+{-| Generates a string in the form of
+equations
+def_t5(g)
+def_t7(g)
+;
+-}
+equations : List Int -> String
+equations vars =
+    let
+        line i =
+            " " ++ equation i ++ "\n"
+    in
+    "equations\n" ++ String.concat (List.map line vars) ++ " " ++ mainEquation ++ "\n;"
+
+
+{-| Generates a string in the form of
+set nodes /19588, 19586, 19590, 19582, 19584, 19592/;
+-}
 setVars : List Int -> String
 setVars vars =
     let
@@ -150,12 +188,28 @@ setVars vars =
     context (String.concat <| List.intersperse ", " <| List.map toString vars)
 
 
+
+-- Helper Functions to generate names for variables and equations
+
+
+mainEquation : String
+mainEquation =
+    "def_p_bdd(g)"
+
+
+equation : Int -> String
+equation i =
+    defvar i ++ "(g)"
+
+
+defvar : Int -> String
+defvar i =
+    "def_t" ++ toString i
+
+
 defTree : Dict Int String -> BDD -> ( List Def, Exp, List Int )
 defTree vars =
     let
-        defvar i =
-            "def_t" ++ toString i ++ "(g)"
-
         termvar i =
             "t(g, \"" ++ toString i ++ "\")"
 
@@ -176,7 +230,7 @@ defTree vars =
                     termvar i == add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)
 
                 def =
-                    Def (defvar i) eqn
+                    Def (equation i) eqn
             in
             ( s1 ++ s2 ++ [ def ], Var (termvar i), i :: vars1 ++ vars2 )
     in

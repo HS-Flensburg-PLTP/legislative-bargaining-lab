@@ -127,7 +127,7 @@ vars n =
     Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ toString i ++ "\")" )) (List.range 0 (n - 1)))
 
 
-def : QOBDD -> ( List Def, String, String, String )
+def : QOBDD -> ( List Def, String, String, String, String )
 def qobdd =
     let
         ( defs, v, vs ) =
@@ -137,6 +137,7 @@ def qobdd =
     , variables
     , setVars vs
     , equations vs
+    , model vs
     )
 
 
@@ -152,11 +153,8 @@ def_t7
 definitions : List Int -> String
 definitions vars =
     let
-        defvar i =
-            "def_t" ++ toString i ++ "(g)"
-
         line i =
-            " " ++ defvar i ++ "\n"
+            " " ++ defVar i ++ "\n"
     in
     "equations\n" ++ String.concat (List.map line vars) ++ ";"
 
@@ -188,8 +186,20 @@ setVars vars =
     context (String.concat <| List.intersperse ", " <| List.map toString vars)
 
 
-
--- Helper Functions to generate names for variables and equations
+{-| Generates a string in the form of
+model nash_nlp /
+def_t5
+def_t7
+def_t9
+/;
+-}
+model : List Int -> String
+model vars =
+    let
+        line v =
+            " " ++ defVar v ++ "\n"
+    in
+    "model nash_nlp /\n" ++ String.concat (List.map line vars) ++ "/;"
 
 
 mainEquation : String
@@ -199,11 +209,11 @@ mainEquation =
 
 equation : Int -> String
 equation i =
-    defvar i ++ "(g)"
+    defVar i ++ "(g)"
 
 
-defvar : Int -> String
-defvar i =
+defVar : Int -> String
+defVar i =
     "def_t" ++ toString i
 
 

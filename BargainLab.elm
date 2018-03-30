@@ -145,7 +145,7 @@ viewCoalisions model =
 viewFormula : Model -> Html Msg
 viewFormula model =
     let
-        resultToString ( stmts, variables, nodes, equations ) =
+        resultToString ( stmts, variables, nodes, equations, model ) =
             "## definitions.gms:\n\n"
                 ++ nodes
                 ++ "\n\n"
@@ -154,6 +154,9 @@ viewFormula model =
                 ++ equations
                 ++ "\n\n"
                 ++ GAMS.prettyDefs stmts
+                ++ "\n\n"
+                ++ "## model.gms:\n\n"
+                ++ model
     in
     div []
         [ pre [] [ text (Maybe.withDefault "formula not available" (Maybe.map (\o -> resultToString <| GAMS.def <| o) model.qobdd)) ] ]

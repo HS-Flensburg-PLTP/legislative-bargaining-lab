@@ -245,3 +245,35 @@ defTree vars =
             ( s1 ++ s2 ++ [ def ], Var (termvar i), i :: vars1 ++ vars2 )
     in
     QOBDD.foldBDD ( [], Num 0, [] ) ( [], Num 1, [] ) ref node
+
+
+type alias File =
+    { name : String, content : String }
+
+
+{-| Generates the file contents
+-}
+files : QOBDD -> List File
+files bdd =
+    let
+        ( defs, variables, nodes, equations, model ) =
+            def bdd
+
+        definitionsFile =
+            { name = "definitions.gms"
+            , content =
+                nodes
+                    ++ "\n\n"
+                    ++ variables
+                    ++ "\n\n"
+                    ++ equations
+                    ++ "\n\n"
+                    ++ prettyDefs defs
+            }
+
+        modelFile =
+            { name = "model.gms"
+            , content = model
+            }
+    in
+    [ definitionsFile, modelFile ]

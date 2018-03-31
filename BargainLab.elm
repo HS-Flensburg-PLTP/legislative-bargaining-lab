@@ -1,5 +1,6 @@
 module BargainLab exposing (..)
 
+import Base64
 import Coalitions exposing (..)
 import Dict
 import GAMS
@@ -117,7 +118,7 @@ view model =
             , a [ href "https://www.gams.com" ] [ text "GAMS" ]
             , text " to calculate the probability of a proposal to be accepted."
             ]
-        , viewFormula model
+        , viewCode model
         ]
 
 
@@ -142,24 +143,38 @@ viewCoalisions model =
 -- viewBanzhaf
 
 
-viewFormula : Model -> Html Msg
-viewFormula model =
+hrefDownload : String -> Attribute msg
+hrefDownload text =
+    href
+        ("data:appliction/octet-stream;charset=utf16le;base64,"
+            ++ Base64.encode text
+        )
+
+
+viewFiles : List GAMS.File -> Html Msg
+viewFiles files =
     let
-        resultToString ( stmts, variables, nodes, equations, model ) =
-            "## definitions.gms:\n\n"
-                ++ nodes
-                ++ "\n\n"
-                ++ variables
-                ++ "\n\n"
-                ++ equations
-                ++ "\n\n"
-                ++ GAMS.prettyDefs stmts
-                ++ "\n\n"
-                ++ "## model.gms:\n\n"
-                ++ model
+        viewFile file =
+            div []
+                [ a
+                    [ downloadAs file.name
+                    , hrefDownload file.content
+                    ]
+                    [ text file.name ]
+                ]
     in
-    div []
-        [ pre [] [ text (Maybe.withDefault "formula not available" (Maybe.map (\o -> resultToString <| GAMS.def <| o) model.qobdd)) ] ]
+    div [] (List.map viewFile files)
+
+
+viewCode : Model -> Html Msg
+viewCode model =
+    let
+        default =
+            text "code not available"
+    in
+    Maybe.withDefault
+        default
+        (Maybe.map (viewFiles << GAMS.files) model.qobdd)
 
 
 viewProbs : List (List Float) -> Html Msg

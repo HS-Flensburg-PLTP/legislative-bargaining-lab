@@ -11158,7 +11158,7 @@ var _user$project$BargainLab$hrefDownload = function (text) {
 	return _elm_lang$html$Html_Attributes$href(
 		A2(
 			_elm_lang$core$Basics_ops['++'],
-			'data:appliction/octet-stream;charset=utf16le;base64,',
+			'data:application/octet-stream;charset=utf16le;base64,',
 			_truqu$elm_base64$Base64$encode(text)));
 };
 var _user$project$BargainLab$viewFiles = function (files) {

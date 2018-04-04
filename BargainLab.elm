@@ -146,7 +146,7 @@ viewCoalisions model =
 hrefDownload : String -> Attribute msg
 hrefDownload text =
     href
-        ("data:appliction/octet-stream;charset=utf16le;base64,"
+        ("data:application/octet-stream;charset=utf16le;base64,"
             ++ Base64.encode text
         )
 

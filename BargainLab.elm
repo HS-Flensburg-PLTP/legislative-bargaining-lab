@@ -16,6 +16,17 @@ import Random exposing (Generator)
 import Vector exposing (toList)
 
 
+main : Program Never Model Msg
+main =
+    program
+        { init = init
+        , view = view
+        , update = update
+        , subscriptions = subscriptions
+        }
+
+
+
 -- split Model
 
 
@@ -39,7 +50,7 @@ hasText model =
 
 
 
--- split Msg
+-- split Update
 
 
 type Msg
@@ -81,6 +92,19 @@ update msg model =
 
         Probs fs ->
             ( { model | probs = fs }, Cmd.none )
+
+
+
+-- SUBSCRIPTION
+
+
+subscriptions : Model -> Sub Msg
+subscriptions model =
+    parsedMWVG Parsed
+
+
+
+-- VIEW
 
 
 headerRow : Model -> Html Msg
@@ -221,18 +245,3 @@ viewPower player prob =
 viewResult : Maybe QOBDD -> (BDD -> a) -> Html Msg
 viewResult mqobdd f =
     div [] [ text (Maybe.withDefault "no result" (Maybe.map (toString << f << .bdd) mqobdd)) ]
-
-
-subscriptions : Model -> Sub Msg
-subscriptions model =
-    parsedMWVG Parsed
-
-
-main : Program Never Model Msg
-main =
-    program
-        { init = init
-        , view = view
-        , update = update
-        , subscriptions = subscriptions
-        }

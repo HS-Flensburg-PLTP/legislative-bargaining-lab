@@ -13,6 +13,7 @@ import Power
 import Probabilities
 import QOBDD exposing (BDD, QOBDD, parseMWVG, parsedMWVG, size)
 import Random exposing (Generator)
+import SimpleGame exposing (..)
 import Vector exposing (toList)
 
 
@@ -60,6 +61,7 @@ type Msg
     | Random
     | Probs (List (List Float))
     | Parsed QOBDD
+    | ParseTestGame
 
 
 init : ( Model, Cmd Msg )
@@ -93,6 +95,9 @@ update msg model =
         Probs fs ->
             ( { model | probs = fs }, Cmd.none )
 
+        ParseTestGame ->
+            ( { model | text = test_show_game (test_parse_mwvg model.text) }, Cmd.none )
+
 
 
 -- SUBSCRIPTION
@@ -113,7 +118,11 @@ headerRow model =
         [ text "Game:"
         , select [ on "change" (Json.Decode.map Display (Json.Decode.andThen gameDecoder targetValue)) ]
             gameOptions
-        , button [ onClick Parse, disabled (hasText model) ] [ text "Load current game" ]
+        , button [ onClick Parse, disabled (hasText model) ]
+            [ text "Load current game" ]
+        , button
+            [ onClick ParseTestGame, disabled (hasText model) ]
+            [ text "Test parse game" ]
         ]
 
 

@@ -62,6 +62,7 @@ type Msg
     | Probs (List (List Float))
     | Parsed QOBDD
     | ParseTestGame
+    | ParsedTestGame SimpleGame
 
 
 init : ( Model, Cmd Msg )
@@ -96,7 +97,10 @@ update msg model =
             ( { model | probs = fs }, Cmd.none )
 
         ParseTestGame ->
-            ( { model | text = test_show_game (test_parse_mwvg model.text) }, Cmd.none )
+            ( model, parseSimpleGame model.text )
+
+        ParsedTestGame testGame ->
+            ( { model | text = toString testGame }, Cmd.none )
 
 
 
@@ -105,7 +109,10 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    parsedMWVG Parsed
+    Sub.batch
+        [ parsedMWVG Parsed
+        , parsedSimpleGame ParsedTestGame
+        ]
 
 
 

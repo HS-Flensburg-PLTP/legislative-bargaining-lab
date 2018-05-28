@@ -63,6 +63,15 @@
 
     app.ports.parsedMWVGJson.send(qobdd);
   });
+
+
+  app.ports.parseSimpleGame.subscribe(function(str) {
+    var game = parse_mwvg(str);
+    // var qobdd = game.getWinQOBDD();
+
+    app.ports.parsedSimpleGameJson.send(game); 
+  });
+  
 </script>
 
 <link rel="stylesheet" href="style.css"></link>

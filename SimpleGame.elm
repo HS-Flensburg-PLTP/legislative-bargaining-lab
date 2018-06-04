@@ -4,48 +4,44 @@ import Json.Decode as Json
 import Json.Encode
 import List exposing (..)
 import Result exposing (..)
-import String
 
 
 type alias RuleMVG =
-    { quota : Int, weight : Int} --, weights : List Int }
+    { quota : Int, weights : List Int }
 
 
 type alias SimpleGame =
-    { n : Int, rules : RuleMVG } -- should be a list
+    { n : Int, rules : List RuleMVG, ruleCount : Int }
 
--- how to handel empty 
+
 ruleDecoder : Json.Decoder RuleMVG
 ruleDecoder =
     Json.map2 RuleMVG
         (Json.field "quota" Json.int)
-            (Json.field "weights" (Json.index 1 Json.int))
-        --(Json.field "weights" (Json.list ( Json.oneOf [Json.int, Json.null 0])))
---        (Json.field "weights"
---            (Json.list
---                (Json.oneOf
---                    [ Json.int
---                    , Json.null 0
---                    ]
---                )
---            )
---        )
+        (Json.field "weights" (Json.list (Json.oneOf [ Json.int, Json.succeed 0 ])))
 
 
--- first element is empty
--- how to handel the case that there are no simple games
--- how to handel self ref.
+takeReverse : Int -> List a -> List a
+takeReverse n l =
+    reverse (take n (reverse l))
+
+
+cleanRules : Int -> RuleMVG -> RuleMVG
+cleanRules n rule =
+    { rule | weights = takeReverse n rule.weights }
+
+
+cleanSimpleGame : SimpleGame -> SimpleGame
+cleanSimpleGame game =
+    { game | rules = List.map (\rule -> cleanRules game.n rule) (takeReverse game.ruleCount game.rules) }
+
+
 simpleGameDecoder : Json.Decoder SimpleGame
 simpleGameDecoder =
-    Json.map2 SimpleGame
+    Json.map3 SimpleGame
         (Json.field "n" Json.int)
-        (Json.field "rules" (Json.index 1 ruleDecoder))
---            (Json.oneOf
---                [ ruleDecoder
---                , Json.null (RuleMVG 0 [])
---                ]
---            )
---        )
+        (Json.field "rules" (Json.list (Json.oneOf [ ruleDecoder, Json.succeed (RuleMVG 0 []) ])))
+        (Json.field "ruleCount" Json.int)
 
 
 port parseSimpleGame : String -> Cmd msg
@@ -60,7 +56,7 @@ parsedSimpleGame f =
         (\v ->
             case Json.decodeValue simpleGameDecoder v of
                 Ok r ->
-                    f r
+                    f (cleanSimpleGame r)
 
                 Err _ ->
                     Debug.crash "Parse error"

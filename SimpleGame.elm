@@ -7,10 +7,9 @@ import Result exposing (..)
 
 
 type JoinTree
-    = BoolEmpty
-    | BoolValue Int
+    = BoolVar String
     | BoolAnd JoinTree JoinTree
-    | BoolOr JoinTree JoinTree
+    | BoolOr String JoinTree JoinTree
 
 
 type alias Player =
@@ -22,12 +21,21 @@ type alias RuleMVG =
 
 
 type alias SimpleGame =
-    { n : Int, rules : List RuleMVG, ruleCount : Int, players : List Player, joinTree : Json.Value }
+    { n : Int, rules : List RuleMVG, ruleCount : Int, players : List Player, joinTree : Maybe JoinTree }
 
 
-joinTreeDecoder : Json.Decoder Json.Value
+joinTreeDecoder : Json.Decoder JoinTree
 joinTreeDecoder =
-    Json.value
+    Json.oneOf
+        [ Json.map3 BoolOr
+            (Json.field "kind" Json.string)
+            (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
+            (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))
+        , Json.map BoolVar (Json.field "name" Json.string)
+        , Json.map2 BoolAnd
+            (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
+            (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))
+        ]
 
 
 {-| decoder for js player
@@ -79,7 +87,7 @@ simpleGameDecoder =
         (Json.field "rules" (Json.list (Json.oneOf [ ruleDecoder, Json.succeed (RuleMVG 0 []) ])))
         (Json.field "ruleCount" Json.int)
         (Json.field "classes" (Json.list playerDecoder))
-        (Json.field "joinTree" joinTreeDecoder)
+        (Json.field "joinTree" (Json.nullable joinTreeDecoder))
 
 
 port parseSimpleGame : String -> Cmd msg

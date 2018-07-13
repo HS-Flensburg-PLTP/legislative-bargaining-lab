@@ -69,11 +69,10 @@
   app.ports.parseSimpleGame.subscribe(function(str) {
     var game = parse_mwvg(str);
     // var qobdd = game.getWinQOBDD();
-    var test = new BoolOrMod(null, null);
     var visitor = new JsonPrepVisitor();
-    var modJoinTree = game.joinTree.fold(visitor);
+    if (!game.joinTree == null){
     game.joinTree = game.joinTree.fold(visitor);
-
+    }
 
     app.ports.parsedSimpleGameJson.send(game); 
   });

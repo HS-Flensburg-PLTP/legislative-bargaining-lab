@@ -20,7 +20,6 @@
 
 function BoolOr (left, right)
 {
-  this.kind  = "or";
 	this.left = left;
 	this.right = right;
 	this.toString = function () { return "("+this.left+" OR "+this.right+")"; };

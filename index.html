@@ -54,6 +54,7 @@
 <script type="text/javascript" src="js/core/Formula.js"></script>
 <script type="text/javascript" src="js/core/WVGModelService.js"></script>
 <script type="text/javascript" src="js/core/FWVGModelService.js"></script>
+<script type="text/javascript" src="JsonPrepVisitor.js"></script>
 <script>
   var app = Elm.BargainLab.fullscreen();
   app.ports.parseMWVG.subscribe(function(str) {
@@ -68,6 +69,11 @@
   app.ports.parseSimpleGame.subscribe(function(str) {
     var game = parse_mwvg(str);
     // var qobdd = game.getWinQOBDD();
+    var test = new BoolOrMod(null, null);
+    var visitor = new JsonPrepVisitor();
+    var modJoinTree = game.joinTree.fold(visitor);
+    game.joinTree = game.joinTree.fold(visitor);
+
 
     app.ports.parsedSimpleGameJson.send(game); 
   });

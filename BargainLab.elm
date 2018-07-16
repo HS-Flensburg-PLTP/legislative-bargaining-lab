@@ -14,6 +14,7 @@ import Probabilities
 import QOBDD exposing (BDD, QOBDD, parseMWVG, parsedMWVG, size)
 import Random exposing (Generator)
 import SimpleGame exposing (..)
+import SimpleGameToSimpleQOBDD exposing (..)
 import Vector exposing (toList)
 
 
@@ -100,7 +101,7 @@ update msg model =
             ( model, parseSimpleGame model.text )
 
         ParsedTestGame testGame ->
-            ( { model | text = toString testGame }, Cmd.none )
+            ( { model | text = toString (fromSGToSimpleQOBDD testGame) }, Cmd.none )
 
 
 

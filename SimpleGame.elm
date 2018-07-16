@@ -5,7 +5,6 @@ import Json.Encode
 import List exposing (..)
 import Result exposing (..)
 
-
 type JoinTree
     = BoolVar String
     | BoolAnd JoinTree JoinTree

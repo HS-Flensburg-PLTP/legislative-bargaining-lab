@@ -20,7 +20,7 @@ type alias RuleMVG =
 
 
 type alias SimpleGame =
-    { n : Int, rules : List RuleMVG, ruleCount : Int, players : List Player, joinTree : Maybe JoinTree }
+    { playerCount : Int, rules : List RuleMVG, ruleCount : Int, players : List Player, joinTree : Maybe JoinTree }
 
 
 joinTreeDecoder : Json.Decoder JoinTree
@@ -74,7 +74,7 @@ cleanRules n rule =
 -}
 cleanSimpleGame : SimpleGame -> SimpleGame
 cleanSimpleGame game =
-    { game | rules = List.map (\rule -> cleanRules game.n rule) (takeReverse game.ruleCount game.rules) }
+    { game | rules = List.map (\rule -> cleanRules game.playerCount rule) (takeReverse game.ruleCount game.rules) }
 
 
 {-| decodes Json to Elm Simple Game

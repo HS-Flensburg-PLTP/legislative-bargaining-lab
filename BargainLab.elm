@@ -101,7 +101,7 @@ update msg model =
             ( model, parseSimpleGame model.text )
 
         ParsedTestGame testGame ->
-            ( { model | text = toString (fromSGToSimpleQOBDD testGame) }, Cmd.none )
+            ( { model | text = toString (testGame) }, Cmd.none )
 
 
 

@@ -70,8 +70,8 @@
     var game = parse_mwvg(str);
     // var qobdd = game.getWinQOBDD();
     var visitor = new JsonPrepVisitor();
-    if (!game.joinTree == null){
-    game.joinTree = game.joinTree.fold(visitor);
+    if (game.joinTree != null){
+      game.joinTree = game.joinTree.fold(visitor);
     }
 
     app.ports.parsedSimpleGameJson.send(game); 

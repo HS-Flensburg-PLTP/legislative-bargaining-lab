@@ -10,13 +10,18 @@ type JoinTree
     | BoolAnd JoinTree JoinTree
     | BoolOr String JoinTree JoinTree
 
+type alias PlayerId = Int
+
+type alias Quota = Int
+
+type alias PlayerWeight = Int
 
 type alias Player =
-    { name : String, id : Int }
+    { name : String, id : PlayerId }
 
 
 type alias RuleMVG =
-    { quota : Int, weights : List Int }
+    { quota : Quota, weights : List PlayerWeight }
 
 
 type alias SimpleGame =

@@ -12,7 +12,7 @@ type JoinTree
 
 
 type alias Player =
-    { m : Int, name : String, id : Int }
+    { name : String, id : Int }
 
 
 type alias RuleMVG =
@@ -41,8 +41,7 @@ joinTreeDecoder =
 -}
 playerDecoder : Json.Decoder Player
 playerDecoder =
-    Json.map3 Player
-        (Json.field "m" Json.int)
+    Json.map2 Player
         (Json.field "name" (Json.oneOf [ Json.string, Json.succeed "" ]))
         (Json.field "id" Json.int)
 

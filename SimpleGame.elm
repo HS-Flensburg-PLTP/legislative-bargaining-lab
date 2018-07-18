@@ -19,10 +19,8 @@ type alias PlayerId =
 type alias Quota =
     Int
 
-
 type alias PlayerWeight =
     Int
-
 
 type alias Player =
     { name : String, id : PlayerId }
@@ -87,25 +85,18 @@ ruleDecoder =
         (Json.field "weights" (Json.list (Json.oneOf [ Json.int, Json.succeed 0 ])))
 
 
-{-| like take just reversed
+{-| removes artifacts caused by js dictionaries
 -}
-takeReverse : Int -> List a -> List a
-takeReverse n l =
-    reverse (take n (reverse l))
+cleanRule : Int -> RuleMVG -> RuleMVG
+cleanRule n rule =
+    { rule | weights = List.drop (length rule.weights - n) rule.weights }
 
 
-{-| removes artifacts coursed by undefined objects in js lists
--}
-cleanRules : Int -> RuleMVG -> RuleMVG
-cleanRules n rule =
-    { rule | weights = takeReverse n rule.weights }
-
-
-{-| removes artifacts coursed by undefined objects in js lists
+{-| removes artifacts caused by js dictionaries
 -}
 cleanSimpleGame : SimpleGame -> SimpleGame
 cleanSimpleGame game =
-    { game | rules = List.map (\rule -> cleanRules game.playerCount rule) (takeReverse game.ruleCount game.rules) }
+    { game | rules = List.map (\rule -> cleanRule game.playerCount rule) (List.drop (length game.rules - game.ruleCount) game.rules) }
 
 
 {-| decodes Json to Elm Simple Game

@@ -3,7 +3,9 @@ module QOBDDBuilders exposing (fromSGToSimpleQOBDD)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
 
-
+{-
+ The function creates a BDD without sharing and without giving the tree nodes ids
+ -}
 buildBDD : Quota -> List PlayerId -> List Player -> BDD
 buildBDD quota weights players  =
     case (weights, players) of
@@ -16,7 +18,9 @@ buildBDD quota weights players  =
             else
                 Zero
 
-
+{-
+ The function creates a simple QOBDD without sharing and without ids.
+ -}
 fromSGToSimpleQOBDD : SimpleGame -> QOBDD
 fromSGToSimpleQOBDD game =
     QOBDD game.playerCount

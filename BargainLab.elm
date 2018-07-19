@@ -14,7 +14,7 @@ import Probabilities
 import QOBDD exposing (BDD, QOBDD, parseMWVG, parsedMWVG, size)
 import Random exposing (Generator)
 import SimpleGame exposing (..)
-import SimpleGameToSimpleQOBDD exposing (..)
+import QOBDDBuilders exposing (..)
 import Vector exposing (toList)
 
 

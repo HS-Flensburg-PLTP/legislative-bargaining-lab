@@ -9,7 +9,7 @@ import Result exposing (..)
 type JoinTree
     = BoolVar String
     | BoolAnd JoinTree JoinTree
-    | BoolOr String JoinTree JoinTree
+    | BoolOr JoinTree JoinTree
 
 
 type alias PlayerId =
@@ -54,7 +54,7 @@ type alias SimpleGame =
 joinTreeDecoder : Json.Decoder JoinTree
 joinTreeDecoder =
     Json.oneOf
-        [ Json.map3 BoolOr
+        [ Json.map3 (\ _ l r -> BoolOr l r)
             (Json.field "kind" Json.string)
             (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
             (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))

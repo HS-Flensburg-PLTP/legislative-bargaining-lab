@@ -19,8 +19,10 @@ type alias PlayerId =
 type alias Quota =
     Int
 
+
 type alias PlayerWeight =
     Int
+
 
 type alias Player =
     { name : String, id : PlayerId }
@@ -34,27 +36,10 @@ type alias SimpleGame =
     { playerCount : Int, rules : List RuleMVG, ruleCount : Int, players : List Player, joinTree : Maybe JoinTree }
 
 
-
---boolOrNodeDecoder : String -> Json.Decoder JoinTree
---boolOrNodeDecoder id =
---    case id of
---        "or" ->
---            Json.map2 (BoolOr id)
---                (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
---                (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))
---
---        _ ->
---            Json.fail <| "The id: " ++ toString id ++ " is unknown"
---Json.map3 BoolOr
---            (Json.field "kind" Json.string)
---            (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
---            (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))
-
-
 joinTreeDecoder : Json.Decoder JoinTree
 joinTreeDecoder =
     Json.oneOf
-        [ Json.map3 (\ _ l r -> BoolOr l r)
+        [ Json.map3 (\_ l r -> BoolOr l r)
             (Json.field "kind" Json.string)
             (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
             (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))

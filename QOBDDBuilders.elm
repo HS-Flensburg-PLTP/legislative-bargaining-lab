@@ -6,45 +6,28 @@ import Tuple exposing(first)
 
 
 {-
-   The function creates a BDD without sharing and without giving the tree nodes ids
--}
-
-
-buildBDD : Quota -> List PlayerWeight -> List Player -> BDD
-buildBDD quota weights players =
-    case ( weights, players ) of
-        ( w :: ws, p :: ps ) ->
-            Node { id = 0, thenB = buildBDD (quota - w) ws ps, var = 0, elseB = buildBDD quota ws ps }
-
-        ( _, _ ) ->
-            if quota > 0 then
-                One
-            else
-                Zero
-{-
    The function creates a BDD without sharing
 -}
 
 
-buildBDDWithIds : Id -> Quota -> List PlayerWeight -> List Player -> ( BDD, Id )
-buildBDDWithIds id quota weights players =
-    case ( weights, players ) of
-        ( w :: ws, p :: ps ) ->
+buildBDDWithIds : Id -> Quota -> List PlayerWeight -> ( BDD, Id )
+buildBDDWithIds id quota weights =
+    case weights of
+        []  ->
+            if quota > 0 then
+                ( Zero, id )
+            else
+                ( One, id )
+
+        w :: ws ->
             let
                 ( lTree, lTreeId ) =
-                    buildBDDWithIds (id) (quota - w) ws ps
+                    buildBDDWithIds (id) (quota - w) ws
 
                 ( rTree, rTreeId ) =
-                    buildBDDWithIds (lTreeId) quota ws ps
+                    buildBDDWithIds (lTreeId) quota ws
             in
             ( Node { id = (rTreeId), thenB = lTree, var = 0, elseB = rTree }, ( rTreeId + 1 ))
-
-        ( _, _ ) ->
-            if quota > 0 then
-                ( One, id )
-            else
-                ( Zero, id )
-
 
 
 {-
@@ -60,5 +43,5 @@ fromSGToSimpleQOBDD game =
                 Zero
 
             Just rule ->
-                first (buildBDDWithIds 0 rule.quota rule.weights game.players)
+                first (buildBDDWithIds 0 rule.quota rule.weights)
         )

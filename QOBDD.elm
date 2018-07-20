@@ -2,6 +2,7 @@ port module QOBDD
     exposing
         ( BDD(..)
           -- should not be exposed
+        , Id
         , QOBDD
         , coalitions
         , foldBDD

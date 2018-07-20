@@ -2,7 +2,7 @@ module QOBDDBuilders exposing (fromSGToSimpleQOBDD)
 
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
-import Tuple exposing(first)
+import Tuple exposing (first)
 
 
 {-
@@ -13,7 +13,7 @@ import Tuple exposing(first)
 buildBDDWithIds : Id -> Quota -> List PlayerWeight -> ( BDD, Id )
 buildBDDWithIds id quota weights =
     case weights of
-        []  ->
+        [] ->
             if quota > 0 then
                 ( Zero, id )
             else
@@ -22,16 +22,17 @@ buildBDDWithIds id quota weights =
         w :: ws ->
             let
                 ( lTree, lTreeId ) =
-                    buildBDDWithIds (id) (quota - w) ws
+                    buildBDDWithIds id (quota - w) ws
 
                 ( rTree, rTreeId ) =
-                    buildBDDWithIds (lTreeId) quota ws
+                    buildBDDWithIds lTreeId quota ws
             in
-            ( Node { id = (rTreeId), thenB = lTree, var = 0, elseB = rTree }, ( rTreeId + 1 ))
+            ( Node { id = rTreeId, thenB = lTree, var = 0, elseB = rTree }, rTreeId + 1 )
+
 
 
 {-
-   The function creates a simple QOBDD without sharing and without ids for the first rule only.
+   The function creates a simple QOBDD without sharing for the first rule in rules only.
 -}
 
 

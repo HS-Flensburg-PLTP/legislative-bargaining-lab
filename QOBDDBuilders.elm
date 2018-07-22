@@ -7,37 +7,31 @@ import Tuple exposing (first)
 
 {-| Takes a Node id a quota and a list of player weights
 and cursively calls itself to generate a BDD.
-
 -}
+buildBDDWithIds : Id -> Quota -> List PlayerWeight -> List Player -> ( BDD, Id )
+buildBDDWithIds id quota weights players =
+    case ( weights, players ) of
+        ( w :: ws, p :: ps ) ->
+            let
+                ( lTree, lTreeId ) =
+                    buildBDDWithIds id (quota - w) ws ps
 
+                ( rTree, rTreeId ) =
+                    buildBDDWithIds lTreeId quota ws ps
+            in
+            ( Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }, rTreeId + 1 )
 
-buildBDDWithIds : Id -> Quota -> List PlayerWeight -> ( BDD, Id )
-buildBDDWithIds id quota weights =
-    case weights of
-        [] ->
+        ( _, _ ) ->
             if quota > 0 then
                 ( Zero, id )
             else
                 ( One, id )
 
-        w :: ws ->
-            let
-                ( lTree, lTreeId ) =
-                    buildBDDWithIds id (quota - w) ws
-
-                ( rTree, rTreeId ) =
-                    buildBDDWithIds lTreeId quota ws
-            in
-            ( Node { id = rTreeId, thenB = lTree, var = 0, elseB = rTree }, rTreeId + 1 )
-
-
 
 {-| Takes a SimpleGame and generates a QOBDD
 (at the moment without sharing) and
-(at the moment just for the first game rule)
+(at the moment just for the first game rule only)
 -}
-
-
 fromSGToSimpleQOBDD : SimpleGame -> QOBDD
 fromSGToSimpleQOBDD game =
     QOBDD game.playerCount
@@ -46,5 +40,5 @@ fromSGToSimpleQOBDD game =
                 Zero
 
             rule :: rules ->
-                first (buildBDDWithIds 0 rule.quota rule.weights)
+                first (buildBDDWithIds 0 rule.quota rule.weights game.players)
         )

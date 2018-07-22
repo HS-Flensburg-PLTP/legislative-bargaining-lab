@@ -3,6 +3,7 @@ port module SimpleGame exposing (..)
 import Json.Decode as Json
 import Json.Encode
 import List exposing (..)
+import QOBDD exposing (PlayerId)
 import Result exposing (..)
 
 
@@ -10,10 +11,6 @@ type JoinTree
     = BoolVar String
     | BoolAnd JoinTree JoinTree
     | BoolOr JoinTree JoinTree
-
-
-type alias PlayerId =
-    Int
 
 
 type alias Quota =

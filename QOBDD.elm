@@ -3,6 +3,7 @@ port module QOBDD
         ( BDD(..)
           -- should not be exposed
         , Id
+        , PlayerId
         , QOBDD
         , coalitions
         , foldBDD
@@ -44,17 +45,17 @@ coalitions qobdd =
     foldQOBDDShare 0 (2 ^ toFloat qobdd.vars) (\ft _ fe -> (ft + fe) / 2) qobdd
 
 
-foldQOBDD : b -> b -> (Int -> b) -> (Int -> b -> Variable -> b -> b) -> QOBDD -> b
+foldQOBDD : b -> b -> (Int -> b) -> (Int -> b -> PlayerId -> b -> b) -> QOBDD -> b
 foldQOBDD zero one ref node qobdd =
     foldBDD zero one ref node qobdd.bdd
 
 
-foldQOBDDShare : b -> b -> (b -> Variable -> b -> b) -> QOBDD -> b
+foldQOBDDShare : b -> b -> (b -> PlayerId -> b -> b) -> QOBDD -> b
 foldQOBDDShare zero one node qobdd =
     foldBDDShare zero one node qobdd.bdd
 
 
-type alias Variable =
+type alias PlayerId =
     Int
 
 
@@ -65,11 +66,11 @@ type alias Id =
 type BDD
     = Zero
     | One
-    | Node { id : Id, thenB : BDD, var : Variable, elseB : BDD }
+    | Node { id : Id, thenB : BDD, var : PlayerId, elseB : BDD }
     | Ref Id
 
 
-foldBDD : b -> b -> (Id -> b) -> (Id -> b -> Variable -> b -> b) -> BDD -> b
+foldBDD : b -> b -> (Id -> b) -> (Id -> b -> PlayerId -> b -> b) -> BDD -> b
 foldBDD zero one ref node bdd =
     case bdd of
         Zero ->
@@ -85,7 +86,7 @@ foldBDD zero one ref node bdd =
             node id (foldBDD zero one ref node thenB) var (foldBDD zero one ref node elseB)
 
 
-foldBDDShare : b -> b -> (b -> Variable -> b -> b) -> BDD -> b
+foldBDDShare : b -> b -> (b -> PlayerId -> b -> b) -> BDD -> b
 foldBDDShare zero one node tree =
     Tuple.second (foldBDDShareDict zero one node tree Dict.empty)
 
@@ -136,7 +137,7 @@ error i dict =
 foldBDDShareDict :
     b
     -> b
-    -> (b -> Variable -> b -> b)
+    -> (b -> PlayerId -> b -> b)
     -> BDD
     -> Dict Id b
     -> ( Dict Id b, b )

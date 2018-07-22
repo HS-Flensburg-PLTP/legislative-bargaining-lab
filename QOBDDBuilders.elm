@@ -5,8 +5,9 @@ import SimpleGame exposing (..)
 import Tuple exposing (first)
 
 
-{-
-   The function creates a BDD without sharing
+{-| Takes a Node id a quota and a list of player weights
+and cursively calls itself to generate a BDD.
+
 -}
 
 
@@ -31,8 +32,9 @@ buildBDDWithIds id quota weights =
 
 
 
-{-
-   The function creates a simple QOBDD without sharing for the first rule in rules only.
+{-| Takes a SimpleGame and generates a QOBDD
+(at the moment without sharing) and
+(at the moment just for the first game rule)
 -}
 
 

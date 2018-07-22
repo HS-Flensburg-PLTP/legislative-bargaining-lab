@@ -41,10 +41,10 @@ buildBDDWithIds id quota weights =
 fromSGToSimpleQOBDD : SimpleGame -> QOBDD
 fromSGToSimpleQOBDD game =
     QOBDD game.playerCount
-        (case List.head game.rules of
-            Nothing ->
+        (case game.rules of
+            [] ->
                 Zero
 
-            Just rule ->
+            rule :: rules ->
                 first (buildBDDWithIds 0 rule.quota rule.weights)
         )

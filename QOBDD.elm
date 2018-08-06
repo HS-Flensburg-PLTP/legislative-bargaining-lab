@@ -2,7 +2,7 @@ port module QOBDD
     exposing
         ( BDD(..)
           -- should not be exposed
-        , Id
+        , NodeId
         , PlayerId
         , QOBDD
         , coalitions
@@ -59,18 +59,18 @@ type alias PlayerId =
     Int
 
 
-type alias Id =
+type alias NodeId =
     Int
 
 
 type BDD
     = Zero
     | One
-    | Node { id : Id, thenB : BDD, var : PlayerId, elseB : BDD }
-    | Ref Id
+    | Node { id : NodeId, thenB : BDD, var : PlayerId, elseB : BDD }
+    | Ref NodeId
 
 
-foldBDD : b -> b -> (Id -> b) -> (Id -> b -> PlayerId -> b -> b) -> BDD -> b
+foldBDD : b -> b -> (NodeId -> b) -> (NodeId -> b -> PlayerId -> b -> b) -> BDD -> b
 foldBDD zero one ref node bdd =
     case bdd of
         Zero ->
@@ -91,7 +91,7 @@ foldBDDShare zero one node tree =
     Tuple.second (foldBDDShareDict zero one node tree Dict.empty)
 
 
-error : Int -> Dict Id b -> String
+error : Int -> Dict NodeId b -> String
 error i dict =
     "Ref " ++ toString i ++ " missing\n" ++ toString dict
 
@@ -139,8 +139,8 @@ foldBDDShareDict :
     -> b
     -> (b -> PlayerId -> b -> b)
     -> BDD
-    -> Dict Id b
-    -> ( Dict Id b, b )
+    -> Dict NodeId b
+    -> ( Dict NodeId b, b )
 foldBDDShareDict zero one node =
     let
         zeroS dict =
@@ -168,7 +168,7 @@ foldBDDShareDict zero one node =
     foldBDD zeroS oneS refS nodeS
 
 
-unsafeGet : Id -> Dict Id a -> a
+unsafeGet : NodeId -> Dict NodeId a -> a
 unsafeGet i dict =
     case Dict.get i dict of
         Nothing ->

@@ -8,7 +8,7 @@ import Tuple exposing (first)
 {-| Takes a Node id a quota and a list of player weights
 and cursively calls itself to generate a BDD.
 -}
-buildBDDWithIds : Id -> Quota -> List PlayerWeight -> List Player -> ( BDD, Id )
+buildBDDWithIds : NodeId -> Quota -> List PlayerWeight -> List Player -> ( BDD, NodeId )
 buildBDDWithIds id quota weights players =
     case ( weights, players ) of
         ( w :: ws, p :: ps ) ->

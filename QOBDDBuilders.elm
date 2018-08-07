@@ -28,30 +28,32 @@ buildBDDWithIds id quota weights players dict1 =
                         One ->
                             ( 0, 1 )
 
-                        _ ->
-                            ( lTreeId, 2 )
+                        Node nodeData ->
+                            ( nodeData.id, 2 )
+
+                        Ref id ->
+                            ( id, 2 )
                     , p.id
-                    , case lTree of
+                    , case rTree of
                         Zero ->
                             ( 0, 0 )
 
                         One ->
                             ( 0, 1 )
 
-                        _ ->
-                            ( rTreeId, 2 )
+                        Node nodeData ->
+                            ( nodeData.id, 2 )
+
+                        Ref id ->
+                            ( id, 2 )
                     )
             in
-            ( case Dict.get nodeInfo dict3 of
+            case Dict.get nodeInfo dict3 of
                 Just nodeId ->
-                    Ref nodeId
+                    ( Ref nodeId, ( rTreeId, dict3 ) )
 
                 Nothing ->
-                    Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }
-            , ( rTreeId + 1
-              , Dict.insert nodeInfo rTreeId dict3
-              )
-            )
+                    ( Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }, ( rTreeId + 1, Dict.insert nodeInfo rTreeId dict3 ) )
 
         ( _, _ ) ->
             if quota > 0 then

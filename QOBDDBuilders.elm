@@ -6,45 +6,29 @@ import SimpleGame exposing (..)
 import Tuple exposing (first)
 
 
-{-| The node types is used to identify the type of BDD constructor
-0 is used to represent the Zero constructor
-1 is used to represent the One constructor
-2 is used to indicates that Node and Ref constructor
--}
-type alias NodeType =
-    Int
-
-
-{-| The type either contains a NodeId then the indicator is 2 or the indicator
-indicates if the node is a Zero or a One leave.
--}
-type alias EitherNodeId =
-    ( NodeId, NodeType )
-
-
 {-| Extracts information from a BDD node
 -}
-subTreeInfo : BDD -> EitherNodeId
+subTreeInfo : BDD -> NodeId
 subTreeInfo tree =
     case tree of
         Zero ->
-            ( 0, 0 )
+            0
 
         One ->
-            ( 0, 1 )
+            1
 
         Node nodeData ->
-            ( nodeData.id, 2 )
+            nodeData.id
 
         Ref id ->
-            ( id, 2 )
+            id
 
 
 {-| The type is used to hold specific information about a BDD node
 and be used as comparable in a Dict type
 -}
 type alias NodeInfo =
-    ( EitherNodeId, PlayerId, EitherNodeId )
+    ( NodeId, PlayerId, NodeId )
 
 
 {-| Recursively calls itself to generate a BDD.
@@ -101,5 +85,5 @@ fromSGToSimpleQOBDD game =
                 Zero
 
             rule :: rules ->
-                first (buildBDD 0 rule.quota rule.weights game.players Dict.empty)
+                first (buildBDD 2 rule.quota rule.weights game.players Dict.empty)
         )

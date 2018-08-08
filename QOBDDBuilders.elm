@@ -15,15 +15,14 @@ type alias NodeType =
     Int
 
 
-{-| The type is supposed to be used similar to a special either type for BDD nodes.
-The type is needed since either is not a comparable type. The key in a Dict type has to be a comparable.
+{-| The type either contains a NodeId then the indicator is 2 or the indicator
+indicates if the node is a Zero or a One leave.
 -}
 type alias EitherNodeId =
     ( NodeId, NodeType )
 
 
-{-| Takes a BDD and returns a tuple with the root node NodeId
-and Integer that functions as a identifier for the kind of node type
+{-| Extracts information from a BDD node
 -}
 subTreeInfo : BDD -> EitherNodeId
 subTreeInfo tree =
@@ -48,8 +47,7 @@ type alias NodeInfo =
     ( EitherNodeId, PlayerId, EitherNodeId )
 
 
-{-| Takes a Node id a quota and a list of player weights
-and cursively calls itself to generate a BDD.
+{-| Recursively calls itself to generate a BDD.
 -}
 buildBDD :
     NodeId
@@ -93,7 +91,6 @@ buildBDD id quota weights players dict1 =
 
 
 {-| Takes a SimpleGame and generates a QOBDD
-(at the moment without sharing) and
 (at the moment just for the first game rule only)
 -}
 fromSGToSimpleQOBDD : SimpleGame -> QOBDD

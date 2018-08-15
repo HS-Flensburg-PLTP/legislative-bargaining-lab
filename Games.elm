@@ -13,11 +13,12 @@ type Game
     | Test2
     | HenningTest
     | BolusTest
+    | JoinTest
 
 
 games : List Game
 games =
-    [ EU27, EU28, Squares, Canadian95, Test, Test2, HenningTest, BolusTest ]
+    [ EU27, EU28, Squares, Canadian95, Test, Test2, HenningTest, BolusTest, JoinTest ]
 
 
 showGame : Game -> String
@@ -47,6 +48,8 @@ showGame g =
         BolusTest ->
             "Bolus Simple Game"
 
+        JoinTest ->
+            "Simple Join Games"
 
 fromString : String -> Maybe Game
 fromString str =
@@ -80,6 +83,8 @@ gameDefinition g =
         BolusTest ->
             bolusTest
 
+        JoinTest ->
+            jointest
 
 gameDecoder : String -> Json.Decoder Game
 gameDecoder str =
@@ -106,6 +111,17 @@ test2 =
 1
 """
 
+jointest =
+    """
+# simple join Tree merge example
+#
+#
+%join 1 AND 2
+3 3
+2 3 A
+1 1 B
+1 1 C
+"""
 
 henningTest =
     """50

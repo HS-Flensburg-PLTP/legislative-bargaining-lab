@@ -1,9 +1,17 @@
-module QOBDDBuilders exposing (fromSGToSimpleQOBDD)
+module QOBDDBuilders exposing (..)
+
+--(fromSGToSimpleQOBDD, buildQOBDD)
 
 import Dict exposing (Dict)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
 import Tuple exposing (first)
+
+
+{-| Binary operations : 0 is and 1 is or
+-}
+type alias BOP =
+    Int
 
 
 {-| Extracts information from a BDD node
@@ -38,8 +46,8 @@ buildBDD :
     -> Quota
     -> List PlayerWeight
     -> List Player
-    -> Dict NodeInfo NodeId
-    -> ( BDD, ( NodeId, Dict NodeInfo NodeId ) )
+    -> Dict NodeInfo BDD
+    -> ( BDD, ( NodeId, Dict NodeInfo BDD ) )
 buildBDD id quota weights players dict1 =
     case ( weights, players ) of
         ( w :: ws, p :: ps ) ->
@@ -57,13 +65,17 @@ buildBDD id quota weights players dict1 =
                     )
             in
             case Dict.get nodeInfo dict3 of
-                Just nodeId ->
-                    ( Ref nodeId, ( rTreeId, dict3 ) )
+                Just refNode ->
+                    ( refNode, ( rTreeId, dict3 ) )
 
                 Nothing ->
-                    ( Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }
+                    let
+                        refNode =
+                            Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }
+                    in
+                    ( refNode
                     , ( rTreeId + 1
-                      , Dict.insert nodeInfo rTreeId dict3
+                      , Dict.insert nodeInfo refNode dict3
                       )
                     )
 
@@ -72,6 +84,50 @@ buildBDD id quota weights players dict1 =
                 ( Zero, ( id, dict1 ) )
             else
                 ( One, ( id, dict1 ) )
+
+
+{-| only for BDDs with the same players at the same level
+-}
+apply : BDD -> BDD -> BOP -> Maybe BDD
+apply tree1 tree2 op =
+    case ( tree1, tree2 ) of
+        ( Node a, Node b ) ->
+            case ( apply a.thenB b.thenB op, apply a.elseB b.elseB op ) of
+                ( Just left, Just right ) ->
+                    Just
+                        (Node
+                            { id = a.id
+                            , thenB = left
+                            , var = a.var
+                            , elseB = right
+                            }
+                        )
+
+                ( _, _ ) ->
+                    Nothing
+
+        ( Ref _, _ ) ->
+            Nothing
+
+        ( _, Ref _ ) ->
+            Nothing
+
+        ( sinka, sinkb ) ->
+            case ( sinka, sinkb, op ) of
+                ( One, One, 0 ) ->
+                    Just One
+
+                ( _, _, 0 ) ->
+                    Just Zero
+
+                ( Zero, Zero, 1 ) ->
+                    Just Zero
+
+                ( _, _, 1 ) ->
+                    Just One
+
+                ( _, _, _ ) ->
+                    Nothing
 
 
 {-| Takes a SimpleGame and generates a QOBDD
@@ -87,3 +143,53 @@ fromSGToSimpleQOBDD game =
             rule :: rules ->
                 first (buildBDD 2 rule.quota rule.weights game.players Dict.empty)
         )
+
+
+joinTree : JoinTree -> List Player -> List RuleMVG -> Maybe BDD
+joinTree jTree players rules =
+    case jTree of
+        BoolVar str ->
+            case String.toInt str of
+                Ok ruleid ->
+                    case List.drop (ruleid - 1) rules of
+                        r :: rs ->
+                            case buildBDD 2 r.quota r.weights players Dict.empty of
+                                ( bdd, _ ) ->
+                                    Just bdd
+
+                        _ ->
+                            Nothing
+
+                Err _ ->
+                    Nothing
+
+        BoolAnd tree1 tree2 ->
+            case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
+                ( Just left, Just right ) ->
+                    apply left right 0
+
+                ( _, _ ) ->
+                    Nothing
+
+        BoolOr tree1 tree2 ->
+            case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
+                ( Just left, Just right ) ->
+                    apply left right 1
+
+                ( _, _ ) ->
+                    Nothing
+
+
+buildQOBDD : SimpleGame -> Maybe QOBDD
+buildQOBDD game =
+    case game.joinTree of
+        Nothing ->
+            Just (fromSGToSimpleQOBDD game)
+
+        Just tree ->
+            case joinTree tree game.players game.rules of
+                Just bdd ->
+                    Just (QOBDD game.playerCount bdd)
+
+                Nothing ->
+                    Nothing

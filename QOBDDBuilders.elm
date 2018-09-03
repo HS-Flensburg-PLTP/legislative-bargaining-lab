@@ -38,6 +38,92 @@ and be used as comparable in a Dict type
 type alias NodeInfo =
     ( NodeId, PlayerId, NodeId )
 
+{-| x is the smallest weight in the winning coalition of a node. if all coalitions are winning is
+x = - inf. are all coalitions loosing is x = 0.
+y is the largest weight in the loosing coalition of a node. if all coalitions are losing is y = inf
+are all coalitions winning is x = 0.
+-}
+type alias NInfo =
+    { v : BDD, x : Float, y : Float }
+
+
+{-| Contains the lookup table for each player
+-}
+type alias LookUpTables =
+    Dict PlayerId (List NInfo)
+
+
+{-| the function tries to find a sub-tree for player i that has already
+been created and can be used for the given quota again.
+-}
+lookup : LookUpTables -> PlayerId -> Quota -> Maybe NInfo
+lookup tables i q =
+    case Dict.get i tables of
+        Nothing ->
+            Nothing
+
+        Just table ->
+            case List.filter (\info -> (info.x < toFloat q) && (info.y >= toFloat q)) table of
+                [] ->
+                    Nothing
+
+                [ info ] ->
+                    Just info
+
+                infos ->
+                    Nothing
+
+
+{-| insert a sub-tree with node information in the table for a specific player
+-}
+insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
+insert tables i v =
+    case Dict.get i tables of
+        Nothing ->
+            Dict.insert  i [v] tables
+
+        Just table ->
+            Dict.insert i (v :: table) tables
+
+
+buildRec :
+    NodeId
+    -> Quota
+    -> List PlayerWeight
+    -> List Player
+    -> LookUpTables
+    -> ( NodeId, NInfo, LookUpTables )
+buildRec nodeId1 quota weights players tables1 =
+    case ( weights, players ) of
+        ( w :: ws, p :: ps ) ->
+            case lookup tables1 p.id quota of
+                Just nodeInfo ->
+                    (nodeId1, nodeInfo, tables1)
+
+                Nothing ->
+                    let
+                        (nodeId2, infoT, tables2) = buildRec nodeId1 (quota - w) ws ps tables1
+
+                        (nodeId3, infoE, tables3) = buildRec nodeId2 quota ws ps tables2
+
+                        ( x1, y1 ) =
+                            ( max (infoT.x + toFloat w) infoE.x, min (infoT.y + toFloat w) infoE.y )
+
+                        newNode =
+                            Node { id = nodeId3, thenB = infoT.v, var = p.id, elseB = infoE.v }
+
+                        newInfo =
+                            { v = newNode, x = x1, y = y1 }
+
+                    in
+                    (nodeId3 + 1, newInfo , insert tables3 p.id newInfo)
+
+        ( _, _ ) ->
+            if quota > 0 then
+                (nodeId1, { v = Zero, x = 0, y = 1 / 0 }, tables1)
+            else
+                (nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1)
+
 
 {-| Recursively calls itself to generate a BDD.
 -}
@@ -107,7 +193,8 @@ apply tree1 tree2 op dict1 =
                         refNode =
                             Node { id = a.id, thenB = lBdd, var = a.var, elseB = rBdd }
                     in
-                        (refNode, dict3)
+                    ( refNode, dict3 )
+
         ( Ref _, _ ) ->
             ( Ref 0, dict1 )
 
@@ -174,11 +261,22 @@ joinTree jTree players rules =
                     first (apply left right 1 Dict.empty)
 
 
+
+build : RuleMVG -> List Player -> BDD
+build rule players =
+    let
+        (id, info, tables) = buildRec 0 rule.quota rule.weights players Dict.empty
+    in
+        info.v
+
 buildQOBDD : SimpleGame -> QOBDD
 buildQOBDD game =
     case game.joinTree of
         Nothing ->
-            fromSGToSimpleQOBDD game
+            case List.head game.rules of
+                Nothing -> QOBDD 0 Zero
+                Just rule -> QOBDD game.playerCount (build rule game.players)
+            --fromSGToSimpleQOBDD game
 
         Just tree ->
             QOBDD game.playerCount (joinTree tree game.players game.rules)

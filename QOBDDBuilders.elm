@@ -57,13 +57,13 @@ type alias LookUpTables =
 been created and can be used for the given quota again. (for the buildRec algorithm)
 -}
 lookup : LookUpTables -> PlayerId -> Quota -> Maybe NInfo
-lookup tables i q =
-    case Dict.get i tables of
+lookup tables player quota =
+    case Dict.get player tables of
         Nothing ->
             Nothing
 
         Just table ->
-            case List.filter (\info -> (info.x < toFloat q) && (info.y >= toFloat q)) table of
+            case List.filter (\info -> (info.x < toFloat quota) && (info.y >= toFloat quota)) table of
                 [] ->
                     Nothing
 
@@ -74,19 +74,19 @@ lookup tables i q =
                     Nothing
 
 
-{-| insert a sub-tree with node information in the table for a specific player. (for the buildRec algorithm)
+{-| insert a sub-tree in the LookUpTable for a specific player. (should be implemented as AVL Tree)
 -}
 insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
-insert tables i v =
-    case Dict.get i tables of
+insert tables player nodeInfo =
+    case Dict.get player tables of
         Nothing ->
-            Dict.insert i [ v ] tables
+            Dict.insert player [ nodeInfo ] tables
 
         Just table ->
-            Dict.insert i (v :: table) tables
+            Dict.insert player (nodeInfo :: table) tables
 
 
-{-| The function is used to build a BDD.
+{-| The function is used to build a single BDD.
 -}
 buildRec :
     NodeId
@@ -126,54 +126,6 @@ buildRec nodeId1 quota weights players tables1 =
                 ( nodeId1, { v = Zero, x = 0, y = 1 / 0 }, tables1 )
             else
                 ( nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1 )
-
-
-
---{-| Recursively calls itself to generate a BDD.
----}
---buildBDD :
---    NodeId
---    -> Quota
---    -> List PlayerWeight
---    -> List Player
---    -> Dict NodeInfo BDD
---    -> ( BDD, ( NodeId, Dict NodeInfo BDD ) )
---buildBDD id quota weights players dict1 =
---    case ( weights, players ) of
---        ( w :: ws, p :: ps ) ->
---            let
---                ( lTree, ( lTreeId, dict2 ) ) =
---                    buildBDD id (quota - w) ws ps dict1
---
---                ( rTree, ( rTreeId, dict3 ) ) =
---                    buildBDD lTreeId quota ws ps dict2
---
---                nodeInfo =
---                    ( subTreeInfo lTree
---                    , p.id
---                    , subTreeInfo rTree
---                    )
---            in
---            case Dict.get nodeInfo dict3 of
---                Just refNode ->
---                    ( refNode, ( rTreeId, dict3 ) )
---
---                Nothing ->
---                    let
---                        refNode =
---                            Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }
---                    in
---                    ( refNode
---                    , ( rTreeId + 1
---                      , Dict.insert nodeInfo refNode dict3
---                      )
---                    )
---
---        ( _, _ ) ->
---            if quota > 0 then
---                ( Zero, ( id, dict1 ) )
---            else
---                ( One, ( id, dict1 ) )
 
 
 {-| Creates a BDD by applying a binary operation to two BDD's
@@ -227,24 +179,9 @@ apply tree1 tree2 op dict1 =
                     Just ( Ref 0, dict1 )
 
 
-{-| Takes a SimpleGame and generates a QOBDD
-(at the moment just for the first game rule only)
--}
 
-
-
---fromSGToSimpleQOBDD : SimpleGame -> QOBDD
---fromSGToSimpleQOBDD game =
---    QOBDD game.playerCount
---        (case game.rules of
---            [] ->
---                Zero
---
---            rule :: rules ->
---                first (buildBDD 2 rule.quota rule.weights game.players Dict.empty)
---        )
-
-
+{-| uses apply to create a single BDD from a JoinTree
+ -}
 joinTree : JoinTree -> List Player -> List RuleMVG -> Maybe BDD
 joinTree jTree players rules =
     case jTree of
@@ -287,7 +224,8 @@ joinTree jTree players rules =
                 _ ->
                     Nothing
 
-
+{-| uses the buildRec algorithm to create a BDD based on the rule defined in the RuleMVG type
+ -}
 build : RuleMVG -> List Player -> BDD
 build rule players =
     let
@@ -296,7 +234,8 @@ build rule players =
     in
     info.v
 
-
+{-| Build a QOBDD based on a single single rule or an entire JoinTree
+ -}
 buildQOBDD : SimpleGame -> Maybe QOBDD
 buildQOBDD game =
     case game.joinTree of

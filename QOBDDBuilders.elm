@@ -47,8 +47,8 @@ type alias LookUpTables =
 been created and can be used for the given quota again. (for the buildRec algorithm)
 -}
 lookup : LookUpTables -> PlayerId -> Quota -> Maybe NInfo
-lookup tables player quota =
-    case Dict.get player tables of
+lookup tables playerId quota =
+    case Dict.get playerId tables of
         Nothing ->
             Nothing
 
@@ -67,13 +67,13 @@ lookup tables player quota =
 {-| Insert a sub-tree in the LookUpTable for a specific player. (should be implemented as AVL Tree)
 -}
 insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
-insert tables player nodeInfo =
-    case Dict.get player tables of
+insert tables playerId nodeInfo =
+    case Dict.get playerId tables of
         Nothing ->
-            Dict.insert player [ nodeInfo ] tables
+            Dict.insert playerId [ nodeInfo ] tables
 
         Just table ->
-            Dict.insert player (nodeInfo :: table) tables
+            Dict.insert playerId (nodeInfo :: table) tables
 
 
 {-| The function is used to build a single BDD.

@@ -54,7 +54,7 @@ type alias LookUpTables =
 
 
 {-| the function tries to find a sub-tree for player i that has already
-been created and can be used for the given quota again.
+been created and can be used for the given quota again. (for the buildRec algorithm)
 -}
 lookup : LookUpTables -> PlayerId -> Quota -> Maybe NInfo
 lookup tables i q =
@@ -74,7 +74,7 @@ lookup tables i q =
                     Nothing
 
 
-{-| insert a sub-tree with node information in the table for a specific player
+{-| insert a sub-tree with node information in the table for a specific player. (for the buildRec algorithm)
 -}
 insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
 insert tables i v =
@@ -85,7 +85,8 @@ insert tables i v =
         Just table ->
             Dict.insert i (v :: table) tables
 
-
+{-| The function is used to build a BDD.
+-}
 buildRec :
     NodeId
     -> Quota
@@ -125,54 +126,54 @@ buildRec nodeId1 quota weights players tables1 =
                 (nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1)
 
 
-{-| Recursively calls itself to generate a BDD.
--}
-buildBDD :
-    NodeId
-    -> Quota
-    -> List PlayerWeight
-    -> List Player
-    -> Dict NodeInfo BDD
-    -> ( BDD, ( NodeId, Dict NodeInfo BDD ) )
-buildBDD id quota weights players dict1 =
-    case ( weights, players ) of
-        ( w :: ws, p :: ps ) ->
-            let
-                ( lTree, ( lTreeId, dict2 ) ) =
-                    buildBDD id (quota - w) ws ps dict1
+--{-| Recursively calls itself to generate a BDD.
+---}
+--buildBDD :
+--    NodeId
+--    -> Quota
+--    -> List PlayerWeight
+--    -> List Player
+--    -> Dict NodeInfo BDD
+--    -> ( BDD, ( NodeId, Dict NodeInfo BDD ) )
+--buildBDD id quota weights players dict1 =
+--    case ( weights, players ) of
+--        ( w :: ws, p :: ps ) ->
+--            let
+--                ( lTree, ( lTreeId, dict2 ) ) =
+--                    buildBDD id (quota - w) ws ps dict1
+--
+--                ( rTree, ( rTreeId, dict3 ) ) =
+--                    buildBDD lTreeId quota ws ps dict2
+--
+--                nodeInfo =
+--                    ( subTreeInfo lTree
+--                    , p.id
+--                    , subTreeInfo rTree
+--                    )
+--            in
+--            case Dict.get nodeInfo dict3 of
+--                Just refNode ->
+--                    ( refNode, ( rTreeId, dict3 ) )
+--
+--                Nothing ->
+--                    let
+--                        refNode =
+--                            Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }
+--                    in
+--                    ( refNode
+--                    , ( rTreeId + 1
+--                      , Dict.insert nodeInfo refNode dict3
+--                      )
+--                    )
+--
+--        ( _, _ ) ->
+--            if quota > 0 then
+--                ( Zero, ( id, dict1 ) )
+--            else
+--                ( One, ( id, dict1 ) )
 
-                ( rTree, ( rTreeId, dict3 ) ) =
-                    buildBDD lTreeId quota ws ps dict2
 
-                nodeInfo =
-                    ( subTreeInfo lTree
-                    , p.id
-                    , subTreeInfo rTree
-                    )
-            in
-            case Dict.get nodeInfo dict3 of
-                Just refNode ->
-                    ( refNode, ( rTreeId, dict3 ) )
-
-                Nothing ->
-                    let
-                        refNode =
-                            Node { id = rTreeId, thenB = lTree, var = p.id, elseB = rTree }
-                    in
-                    ( refNode
-                    , ( rTreeId + 1
-                      , Dict.insert nodeInfo refNode dict3
-                      )
-                    )
-
-        ( _, _ ) ->
-            if quota > 0 then
-                ( Zero, ( id, dict1 ) )
-            else
-                ( One, ( id, dict1 ) )
-
-
-{-| only for BDDs with the same players at the same level
+{-| Creates a BDD by applying a binary operation to two BDD's
 -}
 apply : BDD -> BDD -> BOP -> Dict ( NodeId, NodeId, BOP ) BDD -> ( BDD, Dict ( NodeId, NodeId, BOP ) BDD )
 apply tree1 tree2 op dict1 =
@@ -222,16 +223,16 @@ apply tree1 tree2 op dict1 =
 {-| Takes a SimpleGame and generates a QOBDD
 (at the moment just for the first game rule only)
 -}
-fromSGToSimpleQOBDD : SimpleGame -> QOBDD
-fromSGToSimpleQOBDD game =
-    QOBDD game.playerCount
-        (case game.rules of
-            [] ->
-                Zero
-
-            rule :: rules ->
-                first (buildBDD 2 rule.quota rule.weights game.players Dict.empty)
-        )
+--fromSGToSimpleQOBDD : SimpleGame -> QOBDD
+--fromSGToSimpleQOBDD game =
+--    QOBDD game.playerCount
+--        (case game.rules of
+--            [] ->
+--                Zero
+--
+--            rule :: rules ->
+--                first (buildBDD 2 rule.quota rule.weights game.players Dict.empty)
+--        )
 
 
 joinTree : JoinTree -> List Player -> List RuleMVG -> BDD
@@ -242,7 +243,7 @@ joinTree jTree players rules =
                 Ok ruleid ->
                     case List.drop (ruleid - 1) rules of
                         r :: rs ->
-                            first (buildBDD 2 r.quota r.weights players Dict.empty)
+                            build r players
 
                         _ ->
                             Ref 0
@@ -276,7 +277,6 @@ buildQOBDD game =
             case List.head game.rules of
                 Nothing -> QOBDD 0 Zero
                 Just rule -> QOBDD game.playerCount (build rule game.players)
-            --fromSGToSimpleQOBDD game
 
         Just tree ->
             QOBDD game.playerCount (joinTree tree game.players game.rules)

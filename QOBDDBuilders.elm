@@ -1,7 +1,4 @@
 module QOBDDBuilders exposing (..)
-
---(fromSGToSimpleQOBDD, buildQOBDD)
-
 import Dict exposing (Dict)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
@@ -31,29 +28,22 @@ subTreeInfo tree =
             id
 
 
-{-| The type is used to hold specific information about a BDD node
-and be used as comparable in a Dict type
--}
-type alias NodeInfo =
-    ( NodeId, PlayerId, NodeId )
-
-
-{-| x is the smallest weight in the winning coalition of a node. if all coalitions are winning is
-x = - inf. are all coalitions loosing is x = 0.
-y is the largest weight in the loosing coalition of a node. if all coalitions are losing is y = inf
+{-| x is the smallest weight in the winning coalition of a node. If all coalitions are winning is
+x = - inf. Are all coalitions loosing is x = 0.
+y is the largest weight in the loosing coalition of a node. If all coalitions are losing is y = inf
 are all coalitions winning is x = 0.
 -}
 type alias NInfo =
     { v : BDD, x : Float, y : Float }
 
 
-{-| Contains the lookup table for each player
+{-| Contains the lookup table for each player. (The single lookup tables should be AVL Trees)
 -}
 type alias LookUpTables =
     Dict PlayerId (List NInfo)
 
 
-{-| the function tries to find a sub-tree for player i that has already
+{-| The function tries to find a sub-tree for player i that has already
 been created and can be used for the given quota again. (for the buildRec algorithm)
 -}
 lookup : LookUpTables -> PlayerId -> Quota -> Maybe NInfo
@@ -74,7 +64,7 @@ lookup tables player quota =
                     Nothing
 
 
-{-| insert a sub-tree in the LookUpTable for a specific player. (should be implemented as AVL Tree)
+{-| Insert a sub-tree in the LookUpTable for a specific player. (should be implemented as AVL Tree)
 -}
 insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
 insert tables player nodeInfo =
@@ -128,7 +118,7 @@ buildRec nodeId1 quota weights players tables1 =
                 ( nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1 )
 
 
-{-| Creates a BDD by applying a binary operation to two BDD's
+{-| Creates a BDD by applying a binary operation to two BDD's.
 -}
 apply : BDD -> BDD -> BOP -> Dict ( NodeId, NodeId, BOP ) BDD -> Maybe ( BDD, Dict ( NodeId, NodeId, BOP ) BDD )
 apply tree1 tree2 op dict1 =
@@ -180,7 +170,7 @@ apply tree1 tree2 op dict1 =
 
 
 
-{-| uses apply to create a single BDD from a JoinTree
+{-| Uses apply to create a single BDD from a JoinTree.
  -}
 joinTree : JoinTree -> List Player -> List RuleMVG -> Maybe BDD
 joinTree jTree players rules =
@@ -224,7 +214,7 @@ joinTree jTree players rules =
                 _ ->
                     Nothing
 
-{-| uses the buildRec algorithm to create a BDD based on the rule defined in the RuleMVG type
+{-| Uses the buildRec algorithm to create a BDD based on the rule defined in the RuleMVG type.
  -}
 build : RuleMVG -> List Player -> BDD
 build rule players =
@@ -234,7 +224,7 @@ build rule players =
     in
     info.v
 
-{-| Build a QOBDD based on a single single rule or an entire JoinTree
+{-| Builds a QOBDD based on a single single rule or an entire JoinTree.
  -}
 buildQOBDD : SimpleGame -> Maybe QOBDD
 buildQOBDD game =

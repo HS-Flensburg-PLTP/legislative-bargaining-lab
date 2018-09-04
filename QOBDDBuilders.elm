@@ -5,7 +5,6 @@ module QOBDDBuilders exposing (..)
 import Dict exposing (Dict)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
-import Tuple exposing (first, second)
 
 
 {-| Binary operations : 0 is and 1 is or
@@ -37,6 +36,7 @@ and be used as comparable in a Dict type
 -}
 type alias NodeInfo =
     ( NodeId, PlayerId, NodeId )
+
 
 {-| x is the smallest weight in the winning coalition of a node. if all coalitions are winning is
 x = - inf. are all coalitions loosing is x = 0.
@@ -80,10 +80,11 @@ insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
 insert tables i v =
     case Dict.get i tables of
         Nothing ->
-            Dict.insert  i [v] tables
+            Dict.insert i [ v ] tables
 
         Just table ->
             Dict.insert i (v :: table) tables
+
 
 {-| The function is used to build a BDD.
 -}
@@ -99,13 +100,15 @@ buildRec nodeId1 quota weights players tables1 =
         ( w :: ws, p :: ps ) ->
             case lookup tables1 p.id quota of
                 Just nodeInfo ->
-                    (nodeId1, nodeInfo, tables1)
+                    ( nodeId1, nodeInfo, tables1 )
 
                 Nothing ->
                     let
-                        (nodeId2, infoT, tables2) = buildRec nodeId1 (quota - w) ws ps tables1
+                        ( nodeId2, infoT, tables2 ) =
+                            buildRec nodeId1 (quota - w) ws ps tables1
 
-                        (nodeId3, infoE, tables3) = buildRec nodeId2 quota ws ps tables2
+                        ( nodeId3, infoE, tables3 ) =
+                            buildRec nodeId2 quota ws ps tables2
 
                         ( x1, y1 ) =
                             ( max (infoT.x + toFloat w) infoE.x, min (infoT.y + toFloat w) infoE.y )
@@ -115,15 +118,15 @@ buildRec nodeId1 quota weights players tables1 =
 
                         newInfo =
                             { v = newNode, x = x1, y = y1 }
-
                     in
-                    (nodeId3 + 1, newInfo , insert tables3 p.id newInfo)
+                    ( nodeId3 + 1, newInfo, insert tables3 p.id newInfo )
 
         ( _, _ ) ->
             if quota > 0 then
-                (nodeId1, { v = Zero, x = 0, y = 1 / 0 }, tables1)
+                ( nodeId1, { v = Zero, x = 0, y = 1 / 0 }, tables1 )
             else
-                (nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1)
+                ( nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1 )
+
 
 
 --{-| Recursively calls itself to generate a BDD.
@@ -175,54 +178,61 @@ buildRec nodeId1 quota weights players tables1 =
 
 {-| Creates a BDD by applying a binary operation to two BDD's
 -}
-apply : BDD -> BDD -> BOP -> Dict ( NodeId, NodeId, BOP ) BDD -> ( BDD, Dict ( NodeId, NodeId, BOP ) BDD )
+apply : BDD -> BDD -> BOP -> Dict ( NodeId, NodeId, BOP ) BDD -> Maybe ( BDD, Dict ( NodeId, NodeId, BOP ) BDD )
 apply tree1 tree2 op dict1 =
     case ( tree1, tree2 ) of
         ( Node a, Node b ) ->
             case Dict.get ( a.id, b.id, op ) dict1 of
                 Just refNode ->
-                    ( refNode, dict1 )
+                    Just ( refNode, dict1 )
 
                 Nothing ->
-                    let
-                        ( lBdd, dict2 ) =
-                            apply a.thenB b.thenB op dict1
+                    case apply a.thenB b.thenB op dict1 of
+                        Nothing ->
+                            Nothing
 
-                        ( rBdd, dict3 ) =
-                            apply a.elseB b.elseB op dict2
+                        Just ( lBdd, dict2 ) ->
+                            case apply a.elseB b.elseB op dict2 of
+                                Nothing ->
+                                    Nothing
 
-                        refNode =
-                            Node { id = a.id, thenB = lBdd, var = a.var, elseB = rBdd }
-                    in
-                    ( refNode, dict3 )
+                                Just ( rBdd, dict3 ) ->
+                                    let
+                                        refNode =
+                                            Node { id = a.id, thenB = lBdd, var = a.var, elseB = rBdd }
+                                    in
+                                    Just ( refNode, dict3 )
 
         ( Ref _, _ ) ->
-            ( Ref 0, dict1 )
+            Nothing
 
         ( _, Ref _ ) ->
-            ( Ref 0, dict1 )
+            Nothing
 
         ( sinka, sinkb ) ->
             case ( sinka, sinkb, op ) of
                 ( One, One, 0 ) ->
-                    ( One, dict1 )
+                    Just ( One, dict1 )
 
                 ( _, _, 0 ) ->
-                    ( Zero, dict1 )
+                    Just ( Zero, dict1 )
 
                 ( Zero, Zero, 1 ) ->
-                    ( Zero, dict1 )
+                    Just ( Zero, dict1 )
 
                 ( _, _, 1 ) ->
-                    ( One, dict1 )
+                    Just ( One, dict1 )
 
                 ( _, _, _ ) ->
-                    ( Ref 0, dict1 )
+                    Just ( Ref 0, dict1 )
 
 
 {-| Takes a SimpleGame and generates a QOBDD
 (at the moment just for the first game rule only)
 -}
+
+
+
 --fromSGToSimpleQOBDD : SimpleGame -> QOBDD
 --fromSGToSimpleQOBDD game =
 --    QOBDD game.playerCount
@@ -235,7 +245,7 @@ apply tree1 tree2 op dict1 =
 --        )
 
 
-joinTree : JoinTree -> List Player -> List RuleMVG -> BDD
+joinTree : JoinTree -> List Player -> List RuleMVG -> Maybe BDD
 joinTree jTree players rules =
     case jTree of
         BoolVar str ->
@@ -243,40 +253,65 @@ joinTree jTree players rules =
                 Ok ruleid ->
                     case List.drop (ruleid - 1) rules of
                         r :: rs ->
-                            build r players
+                            Just (build r players)
 
                         _ ->
-                            Ref 0
+                            Nothing
 
                 Err _ ->
-                    Ref 0
+                    Nothing
 
         BoolAnd tree1 tree2 ->
             case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
-                ( left, right ) ->
-                    first (apply left right 0 Dict.empty)
+                ( Just left, Just right ) ->
+                    case apply left right 0 Dict.empty of
+                        Nothing ->
+                            Nothing
+
+                        Just ( bdd, dict ) ->
+                            Just bdd
+
+                _ ->
+                    Nothing
 
         BoolOr tree1 tree2 ->
             case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
-                ( left, right ) ->
-                    first (apply left right 1 Dict.empty)
+                ( Just left, Just right ) ->
+                    case apply left right 1 Dict.empty of
+                        Nothing ->
+                            Nothing
 
+                        Just ( bdd, dict ) ->
+                            Just bdd
+
+                _ ->
+                    Nothing
 
 
 build : RuleMVG -> List Player -> BDD
 build rule players =
     let
-        (id, info, tables) = buildRec 0 rule.quota rule.weights players Dict.empty
+        ( id, info, tables ) =
+            buildRec 0 rule.quota rule.weights players Dict.empty
     in
-        info.v
+    info.v
 
-buildQOBDD : SimpleGame -> QOBDD
+
+buildQOBDD : SimpleGame -> Maybe QOBDD
 buildQOBDD game =
     case game.joinTree of
         Nothing ->
-            case List.head game.rules of
-                Nothing -> QOBDD 0 Zero
-                Just rule -> QOBDD game.playerCount (build rule game.players)
+            case game.rules of
+                [ rule ] ->
+                    Just (QOBDD game.playerCount (build rule game.players))
+
+                _ ->
+                    Nothing
 
         Just tree ->
-            QOBDD game.playerCount (joinTree tree game.players game.rules)
+            case joinTree tree game.players game.rules of
+                Nothing ->
+                    Nothing
+
+                Just bdd ->
+                    Just (QOBDD game.playerCount bdd)

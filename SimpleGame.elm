@@ -1,4 +1,20 @@
-port module SimpleGame exposing (..)
+port module SimpleGame exposing
+    ( JoinTree(..)
+    , Player
+    , PlayerWeight
+    , Quota
+    , RuleMVG
+    , SimpleGame
+    , cleanRule
+    , cleanSimpleGame
+    , joinTreeDecoder
+    , parseSimpleGame
+    , parsedSimpleGame
+    , parsedSimpleGameJson
+    , playerDecoder
+    , ruleDecoder
+    , simpleGameDecoder
+    )
 
 import Json.Decode as Json
 import Json.Encode
@@ -30,7 +46,12 @@ type alias RuleMVG =
 
 
 type alias SimpleGame =
-    { playerCount : Int, rules : List RuleMVG, ruleCount : Int, players : List Player, joinTree : Maybe JoinTree }
+    { playerCount : Int
+    , rules : List RuleMVG
+    , ruleCount : Int
+    , players : List Player
+    , joinTree : JoinTree
+    }
 
 
 joinTreeDecoder : Json.Decoder JoinTree
@@ -85,12 +106,39 @@ cleanSimpleGame game =
 -}
 simpleGameDecoder : Json.Decoder SimpleGame
 simpleGameDecoder =
-    Json.map5 SimpleGame
+    Json.map5 simpleGame
         (Json.field "n" Json.int)
         (Json.field "rules" (Json.list (Json.oneOf [ ruleDecoder, Json.succeed (RuleMVG 0 []) ])))
         (Json.field "ruleCount" Json.int)
         (Json.field "classes" (Json.list playerDecoder))
         (Json.field "joinTree" (Json.nullable joinTreeDecoder))
+
+
+{-| Smart constructor to build simple game without JoinTree
+-}
+simpleGame : Int -> List RuleMVG -> Int -> List Player -> Maybe JoinTree -> SimpleGame
+simpleGame playerCount rules ruleCount players mJoinTree =
+    SimpleGame playerCount rules ruleCount players (defaultJoinTree rules mJoinTree)
+
+
+{-| Construct default JoinTree if no JoinTree is given
+-}
+defaultJoinTree : List RuleMVG -> Maybe JoinTree -> JoinTree
+defaultJoinTree rules mJoinTree =
+    case mJoinTree of
+        Just joinTree ->
+            joinTree
+
+        Nothing ->
+            case rules of
+                [] ->
+                    BoolVar "0"
+
+                [ _ ] ->
+                    BoolVar "0"
+
+                _ :: rs ->
+                    foldl BoolAnd (BoolVar "0") (List.map (BoolVar << toString) (List.range 1 (List.length rs)))
 
 
 port parseSimpleGame : String -> Cmd msg

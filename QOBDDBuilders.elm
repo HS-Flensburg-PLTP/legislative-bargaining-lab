@@ -1,4 +1,17 @@
-module QOBDDBuilders exposing (..)
+module QOBDDBuilders exposing
+    ( BOP
+    , LookUpTables
+    , NInfo
+    , apply
+    , build
+    , buildQOBDD
+    , buildRec
+    , insert
+    , joinTree
+    , lookup
+    , subTreeInfo
+    )
+
 import Dict exposing (Dict)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
@@ -114,6 +127,7 @@ buildRec nodeId1 quota weights players tables1 =
         ( _, _ ) ->
             if quota > 0 then
                 ( nodeId1, { v = Zero, x = 0, y = 1 / 0 }, tables1 )
+
             else
                 ( nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1 )
 
@@ -169,9 +183,8 @@ apply tree1 tree2 op dict1 =
                     Just ( Ref 0, dict1 )
 
 
-
 {-| Uses apply to create a single BDD from a JoinTree.
- -}
+-}
 joinTree : JoinTree -> List Player -> List RuleMVG -> Maybe BDD
 joinTree jTree players rules =
     case jTree of
@@ -214,8 +227,9 @@ joinTree jTree players rules =
                 _ ->
                     Nothing
 
+
 {-| Uses the buildRec algorithm to create a BDD based on the rule defined in the RuleMVG type.
- -}
+-}
 build : RuleMVG -> List Player -> BDD
 build rule players =
     let
@@ -224,23 +238,14 @@ build rule players =
     in
     info.v
 
+
 {-| Builds a QOBDD based on a single single rule or an entire JoinTree.
- -}
+-}
 buildQOBDD : SimpleGame -> Maybe QOBDD
 buildQOBDD game =
-    case game.joinTree of
+    case joinTree game.joinTree game.players game.rules of
         Nothing ->
-            case game.rules of
-                [ rule ] ->
-                    Just (QOBDD game.playerCount (build rule game.players))
+            Nothing
 
-                _ ->
-                    Nothing
-
-        Just tree ->
-            case joinTree tree game.players game.rules of
-                Nothing ->
-                    Nothing
-
-                Just bdd ->
-                    Just (QOBDD game.playerCount bdd)
+        Just bdd ->
+            Just (QOBDD game.playerCount bdd)

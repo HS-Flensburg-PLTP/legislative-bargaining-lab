@@ -1,5 +1,6 @@
 port module SimpleGame exposing
     ( JoinTree(..)
+    , Op(..)
     , Player
     , PlayerWeight
     , Quota
@@ -23,10 +24,14 @@ import QOBDD exposing (PlayerId)
 import Result exposing (..)
 
 
+type Op
+    = And
+    | Or
+
+
 type JoinTree
-    = BoolVar String
-    | BoolAnd JoinTree JoinTree
-    | BoolOr JoinTree JoinTree
+    = Var String
+    | BinOp Op JoinTree JoinTree
 
 
 type alias Quota =
@@ -57,14 +62,14 @@ type alias SimpleGame =
 joinTreeDecoder : Json.Decoder JoinTree
 joinTreeDecoder =
     Json.oneOf
-        [ Json.map3 (\_ l r -> BoolOr l r)
+        [ Json.map3 (\_ l r -> BinOp Or l r)
             (Json.field "kind" Json.string)
             (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
             (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))
 
         --Json.field "kind" Json.string |> Json.andThen boolOrNodeDecoder
-        , Json.map BoolVar (Json.field "name" Json.string)
-        , Json.map2 BoolAnd
+        , Json.map Var (Json.field "name" Json.string)
+        , Json.map2 (BinOp And)
             (Json.field "left" (Json.lazy (\_ -> joinTreeDecoder)))
             (Json.field "right" (Json.lazy (\_ -> joinTreeDecoder)))
         ]
@@ -132,13 +137,13 @@ defaultJoinTree rules mJoinTree =
         Nothing ->
             case rules of
                 [] ->
-                    BoolVar "0"
+                    Var "0"
 
                 [ _ ] ->
-                    BoolVar "0"
+                    Var "0"
 
                 _ :: rs ->
-                    foldl BoolAnd (BoolVar "0") (List.map (BoolVar << toString) (List.range 1 (List.length rs)))
+                    foldl (BinOp And) (Var "0") (List.map (Var << toString) (List.range 1 (List.length rs)))
 
 
 port parseSimpleGame : String -> Cmd msg

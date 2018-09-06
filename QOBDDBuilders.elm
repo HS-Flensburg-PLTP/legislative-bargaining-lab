@@ -1,6 +1,5 @@
 module QOBDDBuilders exposing
-    ( BOP
-    , LookUpTables
+    ( LookUpTables
     , NInfo
     , apply
     , build
@@ -15,12 +14,6 @@ module QOBDDBuilders exposing
 import Dict exposing (Dict)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
-
-
-{-| Binary operations : 0 is and 1 is or
--}
-type alias BOP =
-    Int
 
 
 {-| Extracts information from a BDD node
@@ -132,13 +125,29 @@ buildRec nodeId1 quota weights players tables1 =
                 ( nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1 )
 
 
+{-| Abstract used to circumvent restriction that keys of a dictionary have to be comparable
+-}
+get : ( NodeId, NodeId, Op ) -> Dict ( NodeId, NodeId, Int ) BDD -> Maybe BDD
+get ( node1, node2, op ) =
+    let
+        op2Int op =
+            case op of
+                And ->
+                    0
+
+                Or ->
+                    1
+    in
+    Dict.get ( node1, node2, op2Int op )
+
+
 {-| Creates a BDD by applying a binary operation to two BDD's.
 -}
-apply : BDD -> BDD -> BOP -> Dict ( NodeId, NodeId, BOP ) BDD -> Maybe ( BDD, Dict ( NodeId, NodeId, BOP ) BDD )
+apply : BDD -> BDD -> Op -> Dict ( NodeId, NodeId, Int ) BDD -> Maybe ( BDD, Dict ( NodeId, NodeId, Int ) BDD )
 apply tree1 tree2 op dict1 =
     case ( tree1, tree2 ) of
         ( Node a, Node b ) ->
-            case Dict.get ( a.id, b.id, op ) dict1 of
+            case get ( a.id, b.id, op ) dict1 of
                 Just refNode ->
                     Just ( refNode, dict1 )
 
@@ -167,20 +176,17 @@ apply tree1 tree2 op dict1 =
 
         ( sinka, sinkb ) ->
             case ( sinka, sinkb, op ) of
-                ( One, One, 0 ) ->
+                ( One, One, And ) ->
                     Just ( One, dict1 )
 
-                ( _, _, 0 ) ->
+                ( _, _, And ) ->
                     Just ( Zero, dict1 )
 
-                ( Zero, Zero, 1 ) ->
+                ( Zero, Zero, Or ) ->
                     Just ( Zero, dict1 )
 
-                ( _, _, 1 ) ->
+                ( _, _, Or ) ->
                     Just ( One, dict1 )
-
-                ( _, _, _ ) ->
-                    Just ( Ref 0, dict1 )
 
 
 {-| Uses apply to create a single BDD from a JoinTree.
@@ -188,7 +194,7 @@ apply tree1 tree2 op dict1 =
 joinTree : JoinTree -> List Player -> List RuleMVG -> Maybe BDD
 joinTree jTree players rules =
     case jTree of
-        BoolVar str ->
+        Var str ->
             case String.toInt str of
                 Ok ruleid ->
                     case List.drop (ruleid - 1) rules of
@@ -201,23 +207,10 @@ joinTree jTree players rules =
                 Err _ ->
                     Nothing
 
-        BoolAnd tree1 tree2 ->
+        BinOp op tree1 tree2 ->
             case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
                 ( Just left, Just right ) ->
-                    case apply left right 0 Dict.empty of
-                        Nothing ->
-                            Nothing
-
-                        Just ( bdd, dict ) ->
-                            Just bdd
-
-                _ ->
-                    Nothing
-
-        BoolOr tree1 tree2 ->
-            case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
-                ( Just left, Just right ) ->
-                    case apply left right 1 Dict.empty of
+                    case apply left right op Dict.empty of
                         Nothing ->
                             Nothing
 

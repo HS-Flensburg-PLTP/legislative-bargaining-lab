@@ -8,30 +8,11 @@ module QOBDDBuilders exposing
     , insert
     , joinTree
     , lookup
-    , subTreeInfo
     )
 
 import Dict exposing (Dict)
 import QOBDD exposing (..)
 import SimpleGame exposing (..)
-
-
-{-| Extracts information from a BDD node
--}
-subTreeInfo : BDD -> NodeId
-subTreeInfo tree =
-    case tree of
-        Zero ->
-            0
-
-        One ->
-            1
-
-        Node nodeData ->
-            nodeData.id
-
-        Ref id ->
-            id
 
 
 {-| x is the smallest weight in the winning coalition of a node. If all coalitions are winning is
@@ -72,8 +53,8 @@ lookup tables playerId quota =
 
 {-| Insert a sub-tree in the LookUpTable for a specific player. (should be implemented as AVL Tree)
 -}
-insert : LookUpTables -> PlayerId -> NInfo -> LookUpTables
-insert tables playerId nodeInfo =
+insert2 : LookUpTables -> PlayerId -> NInfo -> LookUpTables
+insert2 tables playerId nodeInfo =
     case Dict.get playerId tables of
         Nothing ->
             Dict.insert playerId [ nodeInfo ] tables
@@ -109,13 +90,19 @@ buildRec nodeId1 quota weights players tables1 =
                         ( x1, y1 ) =
                             ( max (infoT.x + toFloat w) infoE.x, min (infoT.y + toFloat w) infoE.y )
 
-                        newNode =
+                        node =
                             Node { id = nodeId3, thenB = infoT.v, var = p.id, elseB = infoE.v }
 
-                        newInfo =
-                            { v = newNode, x = x1, y = y1 }
+                        info =
+                            { v = node, x = x1, y = y1 }
+
+                        ref =
+                            Ref { id = nodeId3, bdd = node }
+
+                        refInfo =
+                            { v = ref, x = x1, y = y1 }
                     in
-                    ( nodeId3 + 1, newInfo, insert tables3 p.id newInfo )
+                    ( nodeId3 + 1, info, insert2 tables3 p.id refInfo )
 
         ( _, _ ) ->
             if quota > 0 then
@@ -125,68 +112,99 @@ buildRec nodeId1 quota weights players tables1 =
                 ( nodeId1, { v = One, x = -1 / 0, y = 0 }, tables1 )
 
 
+op2Int : Op -> Int
+op2Int op =
+    case op of
+        And ->
+            0
+
+        Or ->
+            1
+
+
 {-| Abstract used to circumvent restriction that keys of a dictionary have to be comparable
 -}
 get : ( NodeId, NodeId, Op ) -> Dict ( NodeId, NodeId, Int ) BDD -> Maybe BDD
 get ( node1, node2, op ) =
-    let
-        op2Int op =
-            case op of
-                And ->
-                    0
-
-                Or ->
-                    1
-    in
     Dict.get ( node1, node2, op2Int op )
+
+
+insert :
+    ( NodeId, NodeId, Op )
+    -> BDD
+    -> Dict ( NodeId, NodeId, Int ) BDD
+    -> Dict ( NodeId, NodeId, Int ) BDD
+insert ( node1, node2, op ) bdd dict =
+    Dict.insert ( node1, node2, op2Int op ) bdd dict
 
 
 {-| Creates a BDD by applying a binary operation to two BDD's.
 -}
-apply : BDD -> BDD -> Op -> Dict ( NodeId, NodeId, Int ) BDD -> Maybe ( BDD, Dict ( NodeId, NodeId, Int ) BDD )
+apply : BDD -> BDD -> Op -> Dict ( NodeId, NodeId, Int ) BDD -> ( BDD, Dict ( NodeId, NodeId, Int ) BDD )
 apply tree1 tree2 op dict1 =
+    let
+        applyNonRefs a b dict =
+            let
+                ( lBdd, dict2 ) =
+                    apply a.thenB b.thenB op dict1
+
+                ( rBdd, dict3 ) =
+                    apply a.elseB b.elseB op dict2
+
+                node =
+                    Node { id = a.id, thenB = lBdd, var = a.var, elseB = rBdd }
+            in
+            ( node, insert ( a.id, b.id, op ) (Ref { id = a.id, bdd = node }) dict3 )
+    in
     case ( tree1, tree2 ) of
-        ( Node a, Node b ) ->
+        ( Zero, _ ) ->
+            case op of
+                And ->
+                    ( Zero, dict1 )
+
+                Or ->
+                    ( tree2, dict1 )
+
+        ( _, Zero ) ->
+            case op of
+                And ->
+                    ( Zero, dict1 )
+
+                Or ->
+                    ( tree1, dict1 )
+
+        ( One, _ ) ->
+            case op of
+                And ->
+                    ( tree2, dict1 )
+
+                Or ->
+                    ( One, dict1 )
+
+        ( _, One ) ->
+            case op of
+                And ->
+                    ( tree1, dict1 )
+
+                Or ->
+                    ( One, dict1 )
+
+        ( Ref a, Ref b ) ->
             case get ( a.id, b.id, op ) dict1 of
                 Just refNode ->
-                    Just ( refNode, dict1 )
+                    ( refNode, dict1 )
 
                 Nothing ->
-                    case apply a.thenB b.thenB op dict1 of
-                        Nothing ->
-                            Nothing
+                    apply a.bdd b.bdd op dict1
 
-                        Just ( lBdd, dict2 ) ->
-                            case apply a.elseB b.elseB op dict2 of
-                                Nothing ->
-                                    Nothing
+        ( Ref a, b ) ->
+            apply a.bdd b op dict1
 
-                                Just ( rBdd, dict3 ) ->
-                                    let
-                                        refNode =
-                                            Node { id = a.id, thenB = lBdd, var = a.var, elseB = rBdd }
-                                    in
-                                    Just ( refNode, dict3 )
+        ( a, Ref b ) ->
+            apply a b.bdd op dict1
 
-        ( Ref _, _ ) ->
-            Nothing
-
-        ( _, Ref _ ) ->
-            Nothing
-
-        ( sinka, sinkb ) ->
-            case ( sinka, sinkb, op ) of
-                ( One, One, And ) ->
-                    Just ( One, dict1 )
-
-                ( _, _, And ) ->
-                    Just ( Zero, dict1 )
-
-                ( Zero, Zero, Or ) ->
-                    Just ( Zero, dict1 )
-
-                ( _, _, Or ) ->
-                    Just ( One, dict1 )
+        ( Node a, Node b ) ->
+            applyNonRefs a b dict1
 
 
 {-| Uses apply to create a single BDD from a JoinTree.
@@ -210,12 +228,7 @@ joinTree jTree players rules =
         BinOp op tree1 tree2 ->
             case ( joinTree tree1 players rules, joinTree tree2 players rules ) of
                 ( Just left, Just right ) ->
-                    case apply left right op Dict.empty of
-                        Nothing ->
-                            Nothing
-
-                        Just ( bdd, dict ) ->
-                            Just bdd
+                    Just (Tuple.first (apply left right op Dict.empty))
 
                 _ ->
                     Nothing

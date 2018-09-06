@@ -1,4 +1,4 @@
-module BargainLab exposing (..)
+module BargainLab exposing (Model, Msg(..), gameOption, gameOptions, hasQOBDD, hasText, headerRow, hrefDownload, init, main, subscriptions, update, view, viewCoalisions, viewCode, viewFiles, viewPower, viewPowerList, viewPowerListQOBDD, viewProb, viewProbs, viewProbsRow, viewResult, viewSize)
 
 import Base64
 import Coalitions exposing (..)
@@ -101,7 +101,7 @@ update msg model =
             ( model, parseSimpleGame model.text )
 
         ParsedTestGame testGame ->
-            ( { model | text = toString (buildQOBDD testGame) }, Cmd.none )
+            ( { model | text = Maybe.withDefault "Parse failed" (Maybe.map QOBDD.prettyQOBDD (buildQOBDD testGame)) }, Cmd.none )
 
 
 

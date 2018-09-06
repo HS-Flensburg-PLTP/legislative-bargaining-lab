@@ -1,4 +1,30 @@
-module GAMS exposing (..)
+module GAMS exposing
+    ( Def(..)
+    , Eqn(..)
+    , Exp(..)
+    , File
+    , Op(..)
+    , add
+    , def
+    , defTree
+    , defVar
+    , definitions
+    , equation
+    , equations
+    , files
+    , mainEquation
+    , minus
+    , model
+    , mult
+    , prettyDef
+    , prettyDefs
+    , prettyEqn
+    , prettyExp
+    , prettyOp
+    , setVars
+    , variables
+    , vars
+    )
 
 import Dict exposing (Dict)
 import QOBDD exposing (..)
@@ -147,8 +173,8 @@ variables =
 
 
 {-| Generates a string in the form of
-def_t5
-def_t7
+def\_t5
+def\_t7
 -}
 definitions : List Int -> String
 definitions vars =
@@ -161,8 +187,8 @@ definitions vars =
 
 {-| Generates a string in the form of
 equations
-def_t5(g)
-def_t7(g)
+def\_t5(g)
+def\_t7(g)
 ;
 -}
 equations : List Int -> String
@@ -187,10 +213,10 @@ setVars vars =
 
 
 {-| Generates a string in the form of
-model nash_nlp /
-def_t5
-def_t7
-def_t9
+model nash\_nlp /
+def\_t5
+def\_t7
+def\_t9
 /;
 -}
 model : List Int -> String
@@ -231,7 +257,7 @@ defTree vars =
                 Just v ->
                     v
 
-        ref i =
+        ref i _ =
             ( [], Var (termvar i), [] )
 
         node i ( s1, v1, vars1 ) label ( s2, v2, vars2 ) =

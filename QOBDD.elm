@@ -10,6 +10,8 @@ port module QOBDD exposing
     , foldBDDShare
     , fullSize
     , nodeId
+    , normalizeIDs
+    , normalizeVars
     , parseMWVG
     , parsedMWVG
     , pretty
@@ -20,6 +22,80 @@ port module QOBDD exposing
 import Dict exposing (Dict)
 import Json.Decode as Json
 import Json.Encode
+
+
+normalizeIDs : QOBDD -> QOBDD
+normalizeIDs qobdd =
+    let
+        ( _, _, normBDD ) =
+            normalize qobdd.bdd 0 Dict.empty
+    in
+    QOBDD qobdd.vars normBDD
+
+
+normalize : BDD -> NodeId -> Dict NodeId NodeId -> ( NodeId, Dict NodeId NodeId, BDD )
+normalize bdd nextId dict =
+    case bdd of
+        Zero ->
+            ( nextId, dict, Zero )
+
+        One ->
+            ( nextId, dict, One )
+
+        Ref a ->
+            case Dict.get a.id dict of
+                Nothing ->
+                    normalize a.bdd nextId dict
+
+                Just newId ->
+                    let
+                        ( nextId2, dict2, bdd2 ) =
+                            normalize a.bdd nextId dict
+                    in
+                    ( nextId2, dict2, Ref { a | id = newId, bdd = bdd2 } )
+
+        Node { id, thenB, var, elseB } ->
+            case Dict.get id dict of
+                Nothing ->
+                    let
+                        ( nextId2, dict2, thenB2 ) =
+                            normalize thenB nextId dict
+
+                        ( nextId3, dict3, elseB2 ) =
+                            normalize elseB nextId2 dict2
+                    in
+                    ( nextId3 + 1, Dict.insert id nextId3 dict3, Node { id = nextId3, thenB = thenB2, var = var, elseB = elseB2 } )
+
+                Just newId ->
+                    let
+                        ( nextId2, dict2, thenB2 ) =
+                            normalize thenB nextId dict
+
+                        ( nextId3, dict3, elseB2 ) =
+                            normalize elseB nextId2 dict2
+                    in
+                    ( nextId3, dict3, Node { id = newId, thenB = thenB2, var = var, elseB = elseB2 } )
+
+
+normalizeVars : QOBDD -> QOBDD
+normalizeVars qobdd =
+    QOBDD qobdd.vars (normalizeVarsBDD qobdd.bdd 0)
+
+
+normalizeVarsBDD : BDD -> PlayerId -> BDD
+normalizeVarsBDD bdd nextId =
+    case bdd of
+        Zero ->
+            Zero
+
+        One ->
+            One
+
+        Ref a ->
+            Ref { id = a.id, bdd = normalizeVarsBDD a.bdd nextId }
+
+        Node { id, thenB, var, elseB } ->
+            Node { id = id, thenB = normalizeVarsBDD thenB (nextId + 1), var = nextId, elseB = normalizeVarsBDD elseB (nextId + 1) }
 
 
 type alias PlayerId =

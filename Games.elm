@@ -1,4 +1,4 @@
-module Games exposing (..)
+module Games exposing (Game(..), bolusTest, canadian95, eu27, eu28, fromString, gameDecoder, gameDefinition, games, henningTest, jointest, magicSquares, showGame, test, test2)
 
 import Dict
 import Json.Decode as Json
@@ -51,6 +51,7 @@ showGame g =
         JoinTest ->
             "Simple Join Games"
 
+
 fromString : String -> Maybe Game
 fromString str =
     Dict.get str (Dict.fromList (List.map (\g -> ( toString g, g )) games))
@@ -86,6 +87,7 @@ gameDefinition g =
         JoinTest ->
             jointest
 
+
 gameDecoder : String -> Json.Decoder Game
 gameDecoder str =
     case fromString str of
@@ -111,17 +113,19 @@ test2 =
 1
 """
 
+
 jointest =
     """
 # simple join Tree merge example
 #
 #
-%join 1 AND 2
+%join 1 OR 2
 3 3
 2 3 A
 1 1 B
 1 1 C
 """
+
 
 henningTest =
     """50

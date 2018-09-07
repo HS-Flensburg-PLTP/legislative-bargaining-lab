@@ -1,4 +1,29 @@
-module BargainLab exposing (Model, Msg(..), gameOption, gameOptions, hasQOBDD, hasText, headerRow, hrefDownload, init, main, subscriptions, update, view, viewCoalisions, viewCode, viewFiles, viewPower, viewPowerList, viewPowerListQOBDD, viewProb, viewProbs, viewProbsRow, viewResult, viewSize)
+module BargainLab exposing
+    ( Model
+    , Msg(..)
+    , gameOption
+    , gameOptions
+    , hasQOBDD
+    , hasText
+    , headerRow
+    , hrefDownload
+    , init
+    , main
+    , subscriptions
+    , update
+    , view
+    , viewCoalisions
+    , viewCode
+    , viewFiles
+    , viewPower
+    , viewPowerList
+    , viewPowerListQOBDD
+    , viewProb
+    , viewProbs
+    , viewProbsRow
+    , viewResult
+    , viewSize
+    )
 
 import Base64
 import Coalitions exposing (..)
@@ -11,7 +36,7 @@ import Html.Events exposing (on, onClick, onInput, targetValue)
 import Json.Decode
 import Power
 import Probabilities
-import QOBDD exposing (BDD, QOBDD, parseMWVG, parsedMWVG, size)
+import QOBDD exposing (BDD, QOBDD, normalizeIDs, normalizeVars, parseMWVG, parsedMWVG, size)
 import QOBDDBuilders exposing (..)
 import Random exposing (Generator)
 import SimpleGame exposing (..)
@@ -84,7 +109,9 @@ update msg model =
             ( { model | text = str }, Cmd.none )
 
         Parsed qobdd ->
-            ( { model | qobdd = Just qobdd, probs = Probabilities.halvesDiag qobdd.vars }, Cmd.none )
+            ( { model | qobdd = Just (normalizeIDs qobdd), probs = Probabilities.halvesDiag qobdd.vars }
+            , parseSimpleGame model.text
+            )
 
         Random ->
             case model.qobdd of
@@ -101,7 +128,21 @@ update msg model =
             ( model, parseSimpleGame model.text )
 
         ParsedTestGame testGame ->
-            ( { model | text = Maybe.withDefault "Parse failed" (Maybe.map QOBDD.prettyQOBDD (buildQOBDD testGame)) }, Cmd.none )
+            case model.qobdd of
+                Nothing ->
+                    ( { model | text = "Old parsing failed" }, Cmd.none )
+
+                Just qobdd ->
+                    case Maybe.map normalizeVars (buildQOBDD testGame) of
+                        Nothing ->
+                            ( { model | text = "New parsing failed" }, Cmd.none )
+
+                        Just newQOBDD ->
+                            if qobdd == newQOBDD then
+                                ( { model | text = "QOBDDs are equal" }, Cmd.none )
+
+                            else
+                                ( { model | text = "QOBDDs differ\n\n" ++ QOBDD.prettyQOBDD qobdd ++ "\n\n" ++ QOBDD.prettyQOBDD newQOBDD }, Cmd.none )
 
 
 

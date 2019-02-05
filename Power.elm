@@ -104,10 +104,10 @@ shapley player n bdd =
         v =
             swingsV player bdd
 
-        s =
-            sum (indexedMap (\k s -> fac (k - 1) * fac (n - k) * s) v)
+        s1 =
+            sum (indexedMap (\k s2 -> fac (k - 1) * fac (n - k) * s2) v)
     in
-    toFloat s / toFloat (fac n)
+    toFloat s1 / toFloat (fac n)
 
 
 {-| The relative Shapley-Shubik index for a list of players

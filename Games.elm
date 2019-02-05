@@ -50,7 +50,7 @@ showGame g =
 
 fromString : String -> Maybe Game
 fromString str =
-    Dict.get str (Dict.fromList (List.map (\g -> ( toString g, g )) games))
+    Dict.get str (Dict.fromList (List.map (\g -> ( Debug.toString g, g )) games))
 
 
 gameDefinition : Game -> String

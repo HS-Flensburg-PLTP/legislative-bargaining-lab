@@ -228,7 +228,7 @@ subscriptions model =
     parsedMWVG Parsed
 
 
-main : Program Bool Model Msg
+main : Program () Model Msg
 main =
     Browser.element
         { init = \_ -> init

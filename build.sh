@@ -1,1 +1,1 @@
-elm-make BargainLab.elm --output=BargainLab.js
+elm make BargainLab.elm --output=BargainLab.js

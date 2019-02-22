@@ -1,4 +1,4 @@
-module ListUtil exposing (..)
+module ListUtil exposing (diff, remove)
 
 
 remove : comparable -> List comparable -> List comparable
@@ -10,6 +10,7 @@ remove x xs =
         y :: ys ->
             if x == y then
                 ys
+
             else
                 y :: remove x ys
 

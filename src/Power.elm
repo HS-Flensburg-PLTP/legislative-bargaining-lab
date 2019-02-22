@@ -1,10 +1,11 @@
-module Power exposing (..)
+module Power exposing (allSwings, allSwingsV, banzhaf, banzhafs, henningIndex, isPlayer, shapley, shapleys, swings, swingsV, with, withV, without, withoutV)
 
 import Iteration exposing (sumProd)
 import List exposing (indexedMap, length, map, sum)
 import QOBDD exposing (..)
 import Utils exposing (fac)
 import Vector exposing (Vector, extend, minus, mult, one, plus, zero)
+
 
 
 -- henningIndex : (Int -> Float) -> BDD -> Float
@@ -35,6 +36,7 @@ isPlayer : Int -> a -> a -> Int -> a
 isPlayer i thenV elseV j =
     if j == i then
         thenV
+
     else
         elseV
 

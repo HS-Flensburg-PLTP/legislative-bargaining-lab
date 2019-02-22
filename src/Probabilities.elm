@@ -1,4 +1,4 @@
-module Probabilities exposing (..)
+module Probabilities exposing (diagonal, halves, halvesDiag, normalise, prob, probTree, probs, probsDiagGen, probsGen, row)
 
 import Dict exposing (Dict, get)
 import QOBDD exposing (BDD, QOBDD, foldBDDShare)

@@ -1,4 +1,4 @@
-module Iteration exposing (..)
+module Iteration exposing (Semiring, card, sumProd, sumProdSpec)
 
 import Coalitions
 import List exposing (foldr, map)

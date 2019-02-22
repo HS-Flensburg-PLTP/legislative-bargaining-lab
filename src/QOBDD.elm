@@ -1,16 +1,16 @@
-port module QOBDD
-    exposing
-        ( BDD(..)
-          -- should not be exposed
-        , QOBDD
-        , coalitions
-        , foldBDD
-        , foldBDDShare
-        , fullSize
-        , parseMWVG
-        , parsedMWVG
-        , size
-        )
+port module QOBDD exposing
+    (  BDD(..)
+       -- should not be exposed
+
+    , QOBDD
+    , coalitions
+    , foldBDD
+    , foldBDDShare
+    , fullSize
+    , parseMWVG
+    , parsedMWVG
+    , size
+    )
 
 import Dict exposing (Dict)
 import Json.Decode as Json
@@ -91,7 +91,7 @@ foldBDDShare zero one node tree =
 
 error : Int -> Dict Id b -> String
 error i dict =
-    "Ref " ++ Debug.toString i ++ " missing\n" ++ Debug.toString dict
+    "Ref " ++ String.fromInt i ++ " missing\n" ++ Debug.toString dict
 
 
 
@@ -255,9 +255,11 @@ buildLeaf l f v =
             ( l
             , if v == 0 then
                 Zero
+
               else
                 One
             )
+
     else
         Json.fail "no leaf"
 
@@ -271,6 +273,7 @@ buildRef : List Int -> Int -> Json.Decoder ( List Int, BDD )
 buildRef l i =
     if List.member i l then
         Json.succeed ( l, Ref i )
+
     else
         Json.fail "no ref"
 

@@ -1,4 +1,4 @@
-module GAMS exposing (..)
+module GAMS exposing (Def(..), Elements, Eqn(..), Exp(..), File, Op(..), add, buildModel, buildVars, def, defTree, defVar, definitions, equals, equation, equations, files, mainEquation, minus, mult, prettyDef, prettyDefs, prettyEqn, prettyExp, prettyOp, setVars, variables)
 
 import Dict exposing (Dict)
 import QOBDD exposing (..)
@@ -81,7 +81,7 @@ prettyExp : Exp -> String
 prettyExp exp =
     case exp of
         Num int ->
-            Debug.toString int
+            String.fromInt int
 
         Var string ->
             string
@@ -124,15 +124,17 @@ prettyEqn eqn =
 
 buildVars : Int -> Dict Int String
 buildVars n =
-    Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ Debug.toString i ++ "\")" )) (List.range 0 (n - 1)))
+    Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ String.fromInt i ++ "\")" )) (List.range 0 (n - 1)))
+
 
 type alias Elements =
-  { defs2 : List Def
-  , variables2 : String
-  , nodes : String
-  , equations2 : String
-  , model : String
-  }
+    { defs2 : List Def
+    , variables2 : String
+    , nodes : String
+    , equations2 : String
+    , model : String
+    }
+
 
 def : QOBDD -> Elements
 def qobdd =
@@ -140,12 +142,11 @@ def qobdd =
         ( defs, v, vs ) =
             defTree (buildVars qobdd.vars) qobdd.bdd
     in
-    Elements ( defs ++ [ Def mainEquation (equals "P(g)" v) ])
-     variables
-     (setVars vs)
-     (equations vs)
-     (buildModel vs)
-
+    Elements (defs ++ [ Def mainEquation (equals "P(g)" v) ])
+        variables
+        (setVars vs)
+        (equations vs)
+        (buildModel vs)
 
 
 variables : String
@@ -154,8 +155,8 @@ variables =
 
 
 {-| Generates a string in the form of
-def_t5
-def_t7
+def\_t5
+def\_t7
 -}
 definitions : List Int -> String
 definitions vars =
@@ -168,8 +169,8 @@ definitions vars =
 
 {-| Generates a string in the form of
 equations
-def_t5(g)
-def_t7(g)
+def\_t5(g)
+def\_t7(g)
 ;
 -}
 equations : List Int -> String
@@ -190,14 +191,14 @@ setVars vars =
         context v =
             "set nodes /" ++ v ++ "/;"
     in
-    context (String.concat <| List.intersperse ", " <| List.map Debug.toString vars)
+    context (String.concat <| List.intersperse ", " <| List.map String.fromInt vars)
 
 
 {-| Generates a string in the form of
-model nash_nlp /
-def_t5
-def_t7
-def_t9
+model nash\_nlp /
+def\_t5
+def\_t7
+def\_t9
 /;
 -}
 buildModel : List Int -> String
@@ -221,19 +222,19 @@ equation i =
 
 defVar : Int -> String
 defVar i =
-    "def_t" ++ Debug.toString i
+    "def_t" ++ String.fromInt i
 
 
 defTree : Dict Int String -> BDD -> ( List Def, Exp, List Int )
 defTree vars =
     let
         termvar i =
-            "t(g, \"" ++ Debug.toString i ++ "\")"
+            "t(g, \"" ++ String.fromInt i ++ "\")"
 
         ident i =
             case Dict.get i vars of
                 Nothing ->
-                    Debug.todo ("Error: " ++ Debug.toString i ++ " not found in " ++ Debug.toString vars)
+                    Debug.todo ("Error: " ++ String.fromInt i ++ " not found in " ++ Debug.toString vars)
 
                 Just v ->
                     v
@@ -258,14 +259,13 @@ type alias File =
     { name : String, content : String }
 
 
-
 {-| Generates the file contents
 -}
 files : QOBDD -> List File
 files bdd =
     let
         es =
-          def bdd
+            def bdd
 
         definitionsFile =
             { name = "definitions.gms"

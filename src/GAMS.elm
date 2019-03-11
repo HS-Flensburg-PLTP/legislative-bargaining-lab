@@ -128,10 +128,10 @@ buildVars n =
 
 
 type alias Elements =
-    { defs2 : List Def
-    , variables2 : String
+    { defs : List Def
+    , variables : String
     , nodes : String
-    , equations2 : String
+    , equations : String
     , model : String
     }
 
@@ -272,11 +272,11 @@ files bdd =
             , content =
                 es.nodes
                     ++ "\n\n"
-                    ++ es.variables2
+                    ++ es.variables
                     ++ "\n\n"
-                    ++ es.equations2
+                    ++ es.equations
                     ++ "\n\n"
-                    ++ prettyDefs es.defs2
+                    ++ prettyDefs es.defs
             }
 
         modelFile =

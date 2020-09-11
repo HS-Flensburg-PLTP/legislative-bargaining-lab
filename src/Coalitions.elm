@@ -1,8 +1,7 @@
-module Coalitions
-    exposing
-        ( all
-        , winning
-        )
+module Coalitions exposing
+    ( all
+    , winning
+    )
 
 import List exposing (map)
 import QOBDD exposing (..)

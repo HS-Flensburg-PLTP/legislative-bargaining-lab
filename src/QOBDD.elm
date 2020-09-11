@@ -1,16 +1,16 @@
-port module QOBDD
-    exposing
-        ( BDD(..)
-          -- should not be exposed
-        , QOBDD
-        , coalitions
-        , foldBDD
-        , foldBDDShare
-        , fullSize
-        , parseMWVG
-        , parsedMWVG
-        , size
-        )
+port module QOBDD exposing
+    (  BDD(..)
+       -- should not be exposed
+
+    , QOBDD
+    , coalitions
+    , foldBDD
+    , foldBDDShare
+    , fullSize
+    , parseMWVG
+    , parsedMWVG
+    , size
+    )
 
 import Dict exposing (Dict)
 import Json.Decode as Json
@@ -91,7 +91,7 @@ foldBDDShare zero one node tree =
 
 error : Int -> Dict Id b -> String
 error i dict =
-    "Ref " ++ toString i ++ " missing\n" ++ toString dict
+    "Ref " ++ String.fromInt i ++ " missing\n" ++ Debug.toString dict
 
 
 
@@ -170,7 +170,7 @@ unsafeGet : Id -> Dict Id a -> a
 unsafeGet i dict =
     case Dict.get i dict of
         Nothing ->
-            Debug.crash (error i dict)
+            Debug.todo (error i dict)
 
         Just v ->
             v
@@ -248,29 +248,32 @@ unsafeGet i dict =
 --          Just v -> (dict1, v)
 
 
-leaf : List Int -> Float -> Int -> Json.Decoder ( List Int, BDD )
-leaf l f v =
+buildLeaf : List Int -> Float -> Int -> Json.Decoder ( List Int, BDD )
+buildLeaf l f v =
     if isInfinite f then
         Json.succeed
             ( l
             , if v == 0 then
                 Zero
+
               else
                 One
             )
+
     else
         Json.fail "no leaf"
 
 
-node : Float -> Int -> BDD -> ( List Int, BDD ) -> ( List Int, BDD )
-node var id t ( l, e ) =
+buildNode : Float -> Int -> BDD -> ( List Int, BDD ) -> ( List Int, BDD )
+buildNode var id t ( l, e ) =
     ( id :: l, Node { id = id, var = truncate var, thenB = t, elseB = e } )
 
 
-ref : List Int -> Int -> Json.Decoder ( List Int, BDD )
-ref l i =
+buildRef : List Int -> Int -> Json.Decoder ( List Int, BDD )
+buildRef l i =
     if List.member i l then
         Json.succeed ( l, Ref i )
+
     else
         Json.fail "no ref"
 
@@ -285,17 +288,17 @@ treeDecoderList l =
     Json.oneOf
         [ Json.andThen
             (\v ->
-                Json.andThen (\f -> leaf l f v) (Json.field "label" Json.float)
+                Json.andThen (\f -> buildLeaf l f v) (Json.field "label" Json.float)
             )
             (Json.field "value" Json.int)
-        , Json.andThen (ref l) (Json.field "id" Json.int)
+        , Json.andThen (buildRef l) (Json.field "id" Json.int)
         , Json.andThen
             (\label ->
                 Json.andThen
                     (\id ->
                         Json.andThen
                             (\( l1, t ) ->
-                                Json.map (node label id t)
+                                Json.map (buildNode label id t)
                                     (Json.field "e" (Json.lazy (\_ -> treeDecoderList l1)))
                             )
                             (Json.field "t" (Json.lazy (\_ -> treeDecoderList l)))
@@ -321,5 +324,5 @@ parsedMWVG f =
                     f r
 
                 Err _ ->
-                    Debug.crash "Parse error"
+                    Debug.todo "Parse error"
         )

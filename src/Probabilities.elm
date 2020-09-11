@@ -1,4 +1,4 @@
-module Probabilities exposing (..)
+module Probabilities exposing (diagonal, halves, halvesDiag, normalise, prob, probTree, probs, probsDiagGen, probsGen, row)
 
 import Dict exposing (Dict, get)
 import QOBDD exposing (BDD, QOBDD, foldBDDShare)
@@ -6,12 +6,12 @@ import Random exposing (Generator)
 
 
 normalise : List Float -> List Float
-normalise probs =
+normalise probs2 =
     let
         total =
-            List.sum probs
+            List.sum probs2
     in
-    List.map (\p -> p / total) probs
+    List.map (\p -> p / total) probs2
 
 
 
@@ -19,22 +19,22 @@ normalise probs =
 
 
 probs : List (Dict Int Float) -> QOBDD -> List Float
-probs probs qobdd =
-    normalise (List.map (\probs -> prob probs qobdd) probs)
+probs probs1 qobdd =
+    normalise (List.map (\probs2 -> prob probs2 qobdd) probs1)
 
 
 prob : Dict Int Float -> QOBDD -> Float
-prob probs qobdd =
-    probTree probs qobdd.bdd
+prob probs2 qobdd =
+    probTree probs2 qobdd.bdd
 
 
 probTree : Dict Int Float -> BDD -> Float
-probTree probs =
+probTree probs2 =
     let
         node p1 var p2 =
-            case get var probs of
+            case get var probs2 of
                 Nothing ->
-                    Debug.crash ("Label " ++ toString var ++ " not found in " ++ toString probs)
+                    Debug.todo ("Label " ++ Debug.toString var ++ " not found in " ++ Debug.toString probs2)
 
                 Just p ->
                     p * p1 + (1 - p) * p2

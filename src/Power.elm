@@ -1,10 +1,11 @@
-module Power exposing (..)
+module Power exposing (allSwings, allSwingsV, banzhaf, banzhafs, henningIndex, isPlayer, shapley, shapleys, swings, swingsV, with, withV, without, withoutV)
 
 import Iteration exposing (sumProd)
 import List exposing (indexedMap, length, map, sum)
 import QOBDD exposing (..)
 import Utils exposing (fac)
 import Vector exposing (Vector, extend, minus, mult, one, plus, zero)
+
 
 
 -- henningIndex : (Int -> Float) -> BDD -> Float
@@ -35,6 +36,7 @@ isPlayer : Int -> a -> a -> Int -> a
 isPlayer i thenV elseV j =
     if j == i then
         thenV
+
     else
         elseV
 
@@ -104,10 +106,10 @@ shapley player n bdd =
         v =
             swingsV player bdd
 
-        s =
-            sum (indexedMap (\k s -> fac (k - 1) * fac (n - k) * s) v)
+        s1 =
+            sum (indexedMap (\k s2 -> fac (k - 1) * fac (n - k) * s2) v)
     in
-    toFloat s / toFloat (fac n)
+    toFloat s1 / toFloat (fac n)
 
 
 {-| The relative Shapley-Shubik index for a list of players

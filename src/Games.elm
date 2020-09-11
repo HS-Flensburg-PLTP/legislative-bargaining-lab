@@ -1,4 +1,4 @@
-module Games exposing (..)
+module Games exposing (Game(..), bolusTest, canadian95, eu27, eu28, fromString, gameDecoder, gameDefinition, games, henningTest, magicSquares, showGame, showPlainGame, test, test2)
 
 import Dict
 import Json.Decode as Json
@@ -18,6 +18,34 @@ type Game
 games : List Game
 games =
     [ EU27, EU28, Squares, Canadian95, Test, Test2, HenningTest, BolusTest ]
+
+
+showPlainGame : Game -> String
+showPlainGame g =
+    case g of
+        EU27 ->
+            "EU27"
+
+        EU28 ->
+            "EU28"
+
+        Squares ->
+            "Squares"
+
+        Canadian95 ->
+            "Canadian95"
+
+        Test ->
+            "Test"
+
+        Test2 ->
+            "Test2"
+
+        HenningTest ->
+            "HenningTest"
+
+        BolusTest ->
+            "BolusTest"
 
 
 showGame : Game -> String
@@ -50,7 +78,7 @@ showGame g =
 
 fromString : String -> Maybe Game
 fromString str =
-    Dict.get str (Dict.fromList (List.map (\g -> ( toString g, g )) games))
+    Dict.get str (Dict.fromList (List.map (\g -> ( showPlainGame g, g )) games))
 
 
 gameDefinition : Game -> String

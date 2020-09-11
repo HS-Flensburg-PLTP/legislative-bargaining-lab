@@ -1,4 +1,4 @@
-module GAMS exposing (..)
+module GAMS exposing (Def(..), Elements, Eqn(..), Exp(..), File, Op(..), add, buildModel, buildVars, def, defTree, defVar, definitions, equals, equation, equations, files, mainEquation, minus, mult, prettyDef, prettyDefs, prettyEqn, prettyExp, prettyOp, setVars, variables)
 
 import Dict exposing (Dict)
 import QOBDD exposing (..)
@@ -81,13 +81,13 @@ prettyExp : Exp -> String
 prettyExp exp =
     case exp of
         Num int ->
-            toString int
+            String.fromInt int
 
         Var string ->
             string
 
-        BinOp op exp exp2 ->
-            "(" ++ prettyExp exp ++ " " ++ prettyOp op ++ " " ++ prettyExp exp2 ++ ")"
+        BinOp op exp1 exp2 ->
+            "(" ++ prettyExp exp1 ++ " " ++ prettyOp op ++ " " ++ prettyExp exp2 ++ ")"
 
 
 type Def
@@ -100,8 +100,8 @@ prettyDefs defs =
 
 
 prettyDef : Def -> String
-prettyDef def =
-    case def of
+prettyDef def2 =
+    case def2 of
         Def var eqn ->
             var ++ "..\n " ++ prettyEqn eqn
 
@@ -110,8 +110,8 @@ type Eqn
     = Eqn String Exp
 
 
-(==) : String -> Exp -> Eqn
-(==) var exp =
+equals : String -> Exp -> Eqn
+equals var exp =
     Eqn var exp
 
 
@@ -122,23 +122,31 @@ prettyEqn eqn =
             var ++ " =E= " ++ prettyExp exp ++ ";\n"
 
 
-vars : Int -> Dict Int String
-vars n =
-    Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ toString i ++ "\")" )) (List.range 0 (n - 1)))
+buildVars : Int -> Dict Int String
+buildVars n =
+    Dict.fromList (List.map (\i -> ( i, "PI(g, \"" ++ String.fromInt i ++ "\")" )) (List.range 0 (n - 1)))
 
 
-def : QOBDD -> ( List Def, String, String, String, String )
+type alias Elements =
+    { defs : List Def
+    , variables : String
+    , nodes : String
+    , equations : String
+    , model : String
+    }
+
+
+def : QOBDD -> Elements
 def qobdd =
     let
         ( defs, v, vs ) =
-            defTree (vars qobdd.vars) qobdd.bdd
+            defTree (buildVars qobdd.vars) qobdd.bdd
     in
-    ( defs ++ [ Def mainEquation ("P(g)" == v) ]
-    , variables
-    , setVars vs
-    , equations vs
-    , model vs
-    )
+    Elements (defs ++ [ Def mainEquation (equals "P(g)" v) ])
+        variables
+        (setVars vs)
+        (equations vs)
+        (buildModel vs)
 
 
 variables : String
@@ -147,8 +155,8 @@ variables =
 
 
 {-| Generates a string in the form of
-def_t5
-def_t7
+def\_t5
+def\_t7
 -}
 definitions : List Int -> String
 definitions vars =
@@ -161,8 +169,8 @@ definitions vars =
 
 {-| Generates a string in the form of
 equations
-def_t5(g)
-def_t7(g)
+def\_t5(g)
+def\_t7(g)
 ;
 -}
 equations : List Int -> String
@@ -183,18 +191,18 @@ setVars vars =
         context v =
             "set nodes /" ++ v ++ "/;"
     in
-    context (String.concat <| List.intersperse ", " <| List.map toString vars)
+    context (String.concat <| List.intersperse ", " <| List.map String.fromInt vars)
 
 
 {-| Generates a string in the form of
-model nash_nlp /
-def_t5
-def_t7
-def_t9
+model nash\_nlp /
+def\_t5
+def\_t7
+def\_t9
 /;
 -}
-model : List Int -> String
-model vars =
+buildModel : List Int -> String
+buildModel vars =
     let
         line v =
             " " ++ defVar v ++ "\n"
@@ -214,19 +222,19 @@ equation i =
 
 defVar : Int -> String
 defVar i =
-    "def_t" ++ toString i
+    "def_t" ++ String.fromInt i
 
 
 defTree : Dict Int String -> BDD -> ( List Def, Exp, List Int )
 defTree vars =
     let
         termvar i =
-            "t(g, \"" ++ toString i ++ "\")"
+            "t(g, \"" ++ String.fromInt i ++ "\")"
 
         ident i =
             case Dict.get i vars of
                 Nothing ->
-                    Debug.crash ("Error: " ++ toString i ++ " not found in " ++ toString vars)
+                    Debug.todo ("Error: " ++ String.fromInt i ++ " not found in " ++ Debug.toString vars)
 
                 Just v ->
                     v
@@ -237,12 +245,12 @@ defTree vars =
         node i ( s1, v1, vars1 ) label ( s2, v2, vars2 ) =
             let
                 eqn =
-                    termvar i == add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2)
+                    equals (termvar i) (add (mult (Var (ident label)) v1) (mult (minus (Num 1) (Var (ident label))) v2))
 
-                def =
+                def2 =
                     Def (equation i) eqn
             in
-            ( s1 ++ s2 ++ [ def ], Var (termvar i), i :: vars1 ++ vars2 )
+            ( s1 ++ s2 ++ [ def2 ], Var (termvar i), i :: vars1 ++ vars2 )
     in
     QOBDD.foldBDD ( [], Num 0, [] ) ( [], Num 1, [] ) ref node
 
@@ -256,24 +264,24 @@ type alias File =
 files : QOBDD -> List File
 files bdd =
     let
-        ( defs, variables, nodes, equations, model ) =
+        es =
             def bdd
 
         definitionsFile =
             { name = "definitions.gms"
             , content =
-                nodes
+                es.nodes
                     ++ "\n\n"
-                    ++ variables
+                    ++ es.variables
                     ++ "\n\n"
-                    ++ equations
+                    ++ es.equations
                     ++ "\n\n"
-                    ++ prettyDefs defs
+                    ++ prettyDefs es.defs
             }
 
         modelFile =
             { name = "model.gms"
-            , content = model
+            , content = es.model
             }
     in
     [ definitionsFile, modelFile ]

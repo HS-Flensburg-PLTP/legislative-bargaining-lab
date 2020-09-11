@@ -1,15 +1,14 @@
-module Vector
-    exposing
-        ( Vector
-        , extend
-        , fromList
-        , minus
-        , mult
-        , one
-        , plus
-        , toList
-        , zero
-        )
+module Vector exposing
+    ( Vector
+    , extend
+    , fromList
+    , minus
+    , mult
+    , one
+    , plus
+    , toList
+    , zero
+    )
 
 import List exposing (map)
 

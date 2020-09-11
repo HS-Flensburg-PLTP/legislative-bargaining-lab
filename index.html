@@ -1,5 +1,6 @@
 
 <div id="spelling"></div>
+<div id="container"></div>
 
 <script type="text/javascript" src="BargainLab.js"></script>
 
@@ -55,7 +56,7 @@
 <script type="text/javascript" src="js/core/WVGModelService.js"></script>
 <script type="text/javascript" src="js/core/FWVGModelService.js"></script>
 <script>
-  var app = Elm.BargainLab.fullscreen();
+  var app = Elm.BargainLab.init({node : document.getElementById("container")});
   app.ports.parseMWVG.subscribe(function(str) {
     var game = parse_mwvg(str);
     var qobdd = game.getWinQOBDD();

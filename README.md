@@ -1,6 +1,6 @@
 # Legislative Bargaining Lab
 
-This application can be used at https://jan-christiansen.github.io/legislative-bargaining-lab/.
+This application can be used at https://hsfl-pltp.github.io/legislative-bargaining-lab/.
 It is part of a research project about legislative bargaining.
 
 
